@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knight Cross — Mobile Friendly</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#0b1220;
+    --accent:#7dd3fc;
+    --muted:#94a3b8;
+    --tile1:#e6eef9;
+    --tile2:#6b7280;
+    --tile-target:#fde68a;
+    --knight-bg:#f472b6;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071020);font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6eef9}
+  .app{
+    max-width:920px;margin:0 auto;padding:14px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  header h1{font-size:18px;margin:0}
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)
+  }
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .controls input[type="text"]{flex:1;min-width:160px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+  button{padding:10px 12px;border-radius:10px;border:0;background:var(--accent);color:#012;font-weight:600;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  .top-stats{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .stat{background:rgba(255,255,255,0.02);padding:8px 10px;border-radius:8px;font-size:14px}
+  .board-wrap{display:flex;gap:12px;align-items:flex-start;flex-direction:column}
+  @media(min-width:760px){ .board-wrap{flex-direction:row} }
+  .board {
+    width:min(92vw,520px); max-width:520px;
+    aspect-ratio:1/1;
+    display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+    gap:0;border-radius:10px;overflow:hidden;background:#222;
+    touch-action: manipulation;
+  }
+  .cell{
+    display:flex;align-items:center;justify-content:center;font-size:18px;user-select:none;cursor:pointer;
+  }
+  .cell.light{background:var(--tile1);color:#0b1220}
+  .cell.dark{background:var(--tile2);color:#fff}
+  .cell.target{box-shadow:inset 0 0 0 4px rgba(250,204,21,0.12);background:var(--tile-target)!important}
+  .cell.knight{display:flex;align-items:center;justify-content:center;font-size:26px}
+  .cell.hint{outline:4px solid rgba(125,211,252,0.12)}
+  footer{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+  .controls-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tiny{font-size:12px;color:var(--muted)}
+  .board-info{display:flex;flex-direction:column;gap:8px;width:220px;min-width:180px}
+  .success-msg{color:#4ade80;font-weight:600;font-size:14px}
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Knight Cross — 60s challenge</h1>
+      <div class="tiny">Mobile-friendly • Tap to move</div>
+    </header>
+
+    <div class="card controls">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
+        <input id="playerName" type="text" placeholder="Your name (will be recorded)" style="flex:2;min-width:120px;" />
+        <input id="playerDept" type="text" placeholder="Department" style="flex:2;min-width:100px;" />
+        <button id="startBtn">Start</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px">
+        <div class="top-stats">
+          <div class="stat">Score: <span id="score">0</span></div>
+          <div class="stat">Moves: <span id="moves">0</span></div>
+          <div class="stat">Time: <span id="time">60</span>s</div>
+        </div>
+        <div class="controls-row">
+          <button id="hintBtn" class="ghost">Show legal moves</button>
+          <button id="sendScoreBtn">Send score</button>
+        </div>
+      </div>
+      <div id="scoreConfirmation" style="display:none;margin-top:8px" class="success-msg">✓ Score submitted successfully!</div>
+    </div>
+
+    <div class="board-wrap">
+      <div id="board" class="board card" aria-label="Knight board"></div>
+
+      <div class="card board-info">
+        <div><strong>How to play</strong></div>
+        <div class="tiny">
+          Start the timer. A <strong>target</strong> square appears. Move the knight by tapping a highlighted legal cell. Reach target to earn points. Each reached target respawns the knight and a new target. Round lasts 60s.
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="randomizeName" class="ghost">Randomize name</button>
+        </div>
+        <div class="tiny" style="margin-top:6px">After round, press <strong>Send score</strong> to save to Google Sheet.</div>
+      </div>
+    </div>
+
+    <footer class="tiny card">
+      Built for simple Knight Cross play — Works without a local server!
+    </footer>
+  </div>
+
+  <!-- Hidden form for CORS-free submission -->
+  <form id="hiddenForm" method="POST" target="hiddenFrame" style="display:none">
+    <input type="text" name="name" id="formName">
+    <input type="text" name="department" id="formDept">
+    <input type="text" name="score" id="formScore">
+    <input type="text" name="moves" id="formMoves">
+    <input type="text" name="timeRemaining" id="formTime">
+    <input type="text" name="timestamp" id="formTimestamp">
+  </form>
+  <iframe name="hiddenFrame" style="display:none"></iframe>
+
+<script>
+/* ----- CONFIG: Replace with YOUR Apps Script URL ----- */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbww1chqDvwIgKps7-F5FYV5j7q5UzfneRlN-pGA3FyM-9lVARDs_ckKFs9EqNyFsO7Azw/exec";
+
+/* Game variables */
+const rows = 8, cols = 8;
+let knight = {r: 0, c: 0};
+let target = {r: 4, c: 4};
+let score = 0, moves = 0, timeLeft = 60, timer = null;
+let running = false;
+let showHints = false;
+
+/* Utility */
+function idx(r,c){ return r*cols + c; }
+function inBounds(r,c){ return r>=0 && r<rows && c>=0 && c<cols; }
+function knightMoves(r,c){
+  const deltas = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+  return deltas.map(d=>({r:r+d[0],c:c+d[1]})).filter(p=>inBounds(p.r,p.c));
+}
+
+/* Build board */
+const boardEl = document.getElementById('board');
+function buildBoard(){
+  boardEl.innerHTML = '';
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (((r+c)%2===0)?'light':'dark');
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('click', onCellClick);
+      cell.addEventListener('touchstart', onCellClick);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function render(){
+  const cells = boardEl.children;
+  for(let i=0;i<cells.length;i++){
+    const el = cells[i];
+    const r = +el.dataset.r, c = +el.dataset.c;
+    el.classList.toggle('target', r===target.r && c===target.c);
+    el.classList.toggle('knight', r===knight.r && c===knight.c);
+    el.classList.toggle('hint', false);
+    el.innerHTML = '';
+    if(r===knight.r && c===knight.c){
+      el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:56%;height:56%;border-radius:8px;background:var(--knight-bg);font-weight:700;color:#012;">♞</div>';
+    } else if(r===target.r && c===target.c){
+      el.innerHTML = '<div style="font-size:14px;font-weight:700">★</div>';
+    }
+  }
+  if(showHints) {
+    const movesList = knightMoves(knight.r, knight.c);
+    movesList.forEach(p=>{
+      const cell = boardEl.querySelector(`.cell[data-r='${p.r}'][data-c='${p.c}']`);
+      if(cell) cell.classList.add('hint');
+    });
+  }
+  document.getElementById('score').textContent = score;
+  document.getElementById('moves').textContent = moves;
+  document.getElementById('time').textContent = timeLeft;
+}
+
+/* Game flow */
+function placeRandomKnightAndTarget(){
+  knight.r = Math.floor(Math.random()*rows);
+  knight.c = Math.floor(Math.random()*cols);
+  do {
+    target.r = Math.floor(Math.random()*rows);
+    target.c = Math.floor(Math.random()*cols);
+  } while(target.r===knight.r && target.c===knight.c);
+}
+
+function startRound(){
+  score = 0; moves = 0; timeLeft = 60; running = true;
+  placeRandomKnightAndTarget();
+  render();
+  if(timer) clearInterval(timer);
+  timer = setInterval(()=>{
+    timeLeft--;
+    document.getElementById('time').textContent = timeLeft;
+    if(timeLeft<=0){
+      stopRound();
+    }
+  }, 1000);
+}
+
+function stopRound(){
+  running = false;
+  if(timer) { clearInterval(timer); timer = null; }
+  alert('Round finished! Score: ' + score + '\nPress "Send score" to record.');
+}
+
+/* Interaction */
+function onCellClick(e){
+  e.preventDefault();
+  const el = (e.currentTarget || e.target);
+  const r = +el.dataset.r, c = +el.dataset.c;
+  if(!running) return;
+  const legal = knightMoves(knight.r, knight.c).some(p => p.r===r && p.c===c);
+  if(!legal) {
+    el.style.transition = 'transform 0.08s';
+    el.style.transform = 'scale(0.98)';
+    setTimeout(()=>{ el.style.transform=''; }, 80);
+    return;
+  }
+  knight.r = r; knight.c = c;
+  moves++;
+  if(r===target.r && c===target.c){
+    score++;
+    placeRandomKnightAndTarget();
+  }
+  render();
+}
+
+/* UI wiring */
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  startRound();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(timer) clearInterval(timer);
+  running=false; score=0; moves=0; timeLeft=60; placeRandomKnightAndTarget(); render();
+});
+
+document.getElementById('hintBtn').addEventListener('click', (ev)=>{
+  showHints = !showHints;
+  ev.target.textContent = showHints ? 'Hide legal moves' : 'Show legal moves';
+  render();
+});
+
+document.getElementById('randomizeName').addEventListener('click', ()=>{
+  const names = ['Ace','Rookless','KnightRider','Hopster','CrossKing','Lancer','Knightly','ShortLeap'];
+  document.getElementById('playerName').value = names[Math.floor(Math.random()*names.length)] + Math.floor(Math.random()*90+10);
+});
+
+document.getElementById('sendScoreBtn').addEventListener('click', () => {
+  const name = (document.getElementById('playerName').value || '').trim();
+  const dept = (document.getElementById('playerDept').value || '').trim();
+  
+  if (!name) {
+    alert('Please enter your name before sending score.');
+    return;
+  }
+
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_APPS_SCRIPT')) {
+    alert('Apps Script URL not set. Edit the APPS_SCRIPT_URL in the HTML.');
+    return;
+  }
+
+  // Use Google Forms-style submission (bulletproof method)
+  const params = new URLSearchParams();
+  params.append('name', name);
+  params.append('department', dept);
+  params.append('score', score);
+  params.append('moves', moves);
+  params.append('timeRemaining', timeLeft);
+  params.append('timestamp', new Date().toISOString());
+
+  // Create temporary form and submit
+  const tempForm = document.createElement('form');
+  tempForm.method = 'POST';
+  tempForm.action = APPS_SCRIPT_URL;
+  tempForm.target = '_blank';
+  tempForm.style.display = 'none';
+
+  // Add all fields
+  ['name', 'department', 'score', 'moves', 'timeRemaining', 'timestamp'].forEach(key => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = params.get(key) || '';
+    tempForm.appendChild(input);
+  });
+
+  document.body.appendChild(tempForm);
+  tempForm.submit();
+  document.body.removeChild(tempForm);
+
+  // Show confirmation
+  const conf = document.getElementById('scoreConfirmation');
+  conf.style.display = 'block';
+  setTimeout(() => { conf.style.display = 'none'; }, 4000);
+  
+  console.log('Score submitted:', { name, dept, score, moves, timeLeft });
+});
+
+/* init */
+buildBoard();
+placeRandomKnightAndTarget();
+render();
+</script>
+</body>
+</html>
