@@ -4,7 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Knight Cross — Mobile Friendly</title>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
+
+  
   :root{
     --bg:#0f172a;
     --card:#0b1220;
@@ -57,8 +60,27 @@
 </style>
 </head>
 <body>
+
+  <!-- QUIZ SECTION -->
+<div id="quizSection" class="quiz-container">
+  <h4>Question:</h4>
+  <p><strong>What is the recurring display at the new Science Centre?</strong></p>
+  <div class="quiz-options">
+    <button onclick="checkAnswer('A')">(A) Weekly Light Show</button>
+    <button onclick="checkAnswer('B')">(B) Nightly Tornado Display</button>
+    <button onclick="checkAnswer('C')">(C) Fornightly Water Works Display</button>
+    <button onclick="checkAnswer('D')">(D) Weekly Aerial Display</button>
+  </div>
+</div>
+
+  <!-- GAME SECTION (HIDDEN INITIALLY) -->
+<div id="gameSection" style="display:none">
+  <!-- 🔹 Your Knight Cross game starts here -->
   <div class="app">
     <header>
+      <h1>Knight Cross — 60s challenge</h1>
+      <div class="tiny">Mobile-friendly • Tap to move</div>
+    </header>
       <h1>Knight Cross — 60s challenge</h1>
       <div class="tiny">Mobile-friendly • Tap to move</div>
     </header>
@@ -119,6 +141,30 @@
 <script>
 /* ----- CONFIG: Replace with YOUR Apps Script URL ----- */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbww1chqDvwIgKps7-F5FYV5j7q5UzfneRlN-pGA3FyM-9lVARDs_ckKFs9EqNyFsO7Azw/exec";
+
+/* --- QUIZ LOGIC --- */
+const correctAnswer = "B";
+
+function checkAnswer(selected) {
+  if (selected === correctAnswer) {
+    Swal.fire({
+      title: "Correct!",
+      text: "You got the right answer. Game unlocked!",
+      icon: "success",
+      confirmButtonText: "Start Game"
+    }).then(() => {
+      document.getElementById("quizSection").style.display = "none";
+      document.getElementById("gameSection").style.display = "block";
+    });
+  } else {
+    Swal.fire({
+      title: "Wrong!",
+      text: "Please try again.",
+      icon: "error",
+      confirmButtonText: "OK"
+    });
+  }
+}
 
 /* Game variables */
 const rows = 8, cols = 8;
