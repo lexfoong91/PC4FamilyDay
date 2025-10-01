@@ -57,6 +57,76 @@
   .tiny{font-size:12px;color:var(--muted)}
   .board-info{display:flex;flex-direction:column;gap:8px;width:220px;min-width:180px}
   .success-msg{color:#4ade80;font-weight:600;font-size:14px}
+.quiz-card {
+  max-width: 460px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #0f172a;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  color: #f1f5f9;
+  text-align: center;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Title */
+.quiz-title {
+  margin-bottom: 12px;
+  font-size: 20px;
+  color: #7dd3fc;
+}
+
+/* Question text */
+.quiz-question {
+  font-size: 16px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* Options container */
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Option buttons */
+.quiz-options button {
+  padding: 14px 16px;
+  background: #0b1220;
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  color: #f1f5f9;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Button hover and active effect */
+.quiz-options button:hover {
+  background: #3b82f6;
+  color: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+}
+
+.quiz-options button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 500px) {
+  .quiz-card {
+    padding: 18px;
+    margin: 20px 12px;
+  }
+  .quiz-options button {
+    font-size: 14px;
+    padding: 12px 14px;
+
+}
+  
 </style>
 </head>
 <body>
