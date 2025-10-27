@@ -1,428 +1,550 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Knight Cross — Mobile Friendly</title>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 1 - Knight Tour Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  
-  :root{
-    --bg:#0f172a;
-    --card:#0b1220;
-    --accent:#7dd3fc;
-    --muted:#94a3b8;
-    --tile1:#e6eef9;
-    --tile2:#6b7280;
-    --tile-target:#fde68a;
-    --knight-bg:#f472b6;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071020);font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6eef9}
-  .app{
-    max-width:920px;margin:0 auto;padding:14px;
-    display:flex;flex-direction:column;gap:12px;
-  }
-  header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  header h1{font-size:18px;margin:0}
-  .card{
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)
-  }
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  .controls input[type="text"]{flex:1;min-width:160px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
-  button{padding:10px 12px;border-radius:10px;border:0;background:var(--accent);color:#012;font-weight:600;cursor:pointer}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .top-stats{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .stat{background:rgba(255,255,255,0.02);padding:8px 10px;border-radius:8px;font-size:14px}
-  .board-wrap{display:flex;gap:12px;align-items:flex-start;flex-direction:column}
-  @media(min-width:760px){ .board-wrap{flex-direction:row} }
-  .board {
-    width:min(92vw,520px); max-width:520px;
-    aspect-ratio:1/1;
-    display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
-    gap:0;border-radius:10px;overflow:hidden;background:#222;
-    touch-action: manipulation;
-  }
-  .cell{
-    display:flex;align-items:center;justify-content:center;font-size:18px;user-select:none;cursor:pointer;
-  }
-  .cell.light{background:var(--tile1);color:#0b1220}
-  .cell.dark{background:var(--tile2);color:#fff}
-  .cell.target{box-shadow:inset 0 0 0 4px rgba(250,204,21,0.12);background:var(--tile-target)!important}
-  .cell.knight{display:flex;align-items:center;justify-content:center;font-size:26px}
-  .cell.hint{outline:4px solid rgba(125,211,252,0.12)}
-  footer{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
-  .controls-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .tiny{font-size:12px;color:var(--muted)}
-  .board-info{display:flex;flex-direction:column;gap:8px;width:220px;min-width:180px}
-  .success-msg{color:#4ade80;font-weight:600;font-size:14px}
-.quiz-card {
-  max-width: 460px;
-  margin: 40px auto;
-  padding: 24px;
-  background: #0f172a;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-  color: #f1f5f9;
-  text-align: center;
-  font-family: 'Inter', system-ui, sans-serif;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-/* Title */
-.quiz-title {
-  margin-bottom: 12px;
-  font-size: 20px;
-  color: #7dd3fc;
-}
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+        }
 
-/* Question text */
-.quiz-question {
-  font-size: 16px;
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
+        h1 {
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
 
-/* Options container */
-.quiz-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
 
-/* Option buttons */
-.quiz-options button {
-  padding: 14px 16px;
-  background: #0b1220;
-  border: 1px solid #3b82f6;
-  border-radius: 12px;
-  color: #f1f5f9;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
+        .info-item {
+            background: #f3f4f6;
+            padding: 10px 20px;
+            border-radius: 10px;
+            flex: 1;
+            text-align: center;
+        }
 
-/* Button hover and active effect */
-.quiz-options button:hover {
-  background: #3b82f6;
-  color: #0f172a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59,130,246,0.4);
-}
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
 
-.quiz-options button:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
 
-/* Mobile adjustments */
-@media (max-width: 500px) {
-  .quiz-card {
-    padding: 18px;
-    margin: 20px 12px;
-  }
-  .quiz-options button {
-    font-size: 14px;
-    padding: 12px 14px;
+        #chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 0;
+            margin: 20px auto;
+            border: 3px solid #374151;
+            width: fit-content;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
 
-}
-  
-</style>
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .square.light {
+            background: #f0d9b5;
+        }
+
+        .square.dark {
+            background: #b58863;
+        }
+
+        .square.valid {
+            background: #86efac !important;
+            cursor: pointer;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .square.knight {
+            background: #3b82f6 !important;
+        }
+
+        .square.target {
+            background: #ef4444 !important;
+            animation: glow 1s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px #ef4444; }
+            50% { box-shadow: 0 0 20px #ef4444; }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-content ul {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+
+        .modal-content li {
+            color: #374151;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .start-button {
+            background: #10b981;
+            padding: 15px 40px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .start-button:hover {
+            background: #059669;
+        }
+
+        .game-over-modal .modal-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-
-  <!-- QUIZ SECTION -->
-<div id="quizSection" class="quiz-container">
-  <h4>Question:</h4>
-  <p><strong>What is the recurring display at the new Science Centre?</strong></p>
-  <div class="quiz-options">
-    <button onclick="checkAnswer('A')">(A) Weekly Light Show</button>
-    <button onclick="checkAnswer('B')">(B) Nightly Tornado Display</button>
-    <button onclick="checkAnswer('C')">(C) Fornightly Water Works Display</button>
-    <button onclick="checkAnswer('D')">(D) Weekly Aerial Display</button>
-  </div>
-</div>
-
-  <!-- GAME SECTION (HIDDEN INITIALLY) -->
-<div id="gameSection" style="display:none">
-  <!-- 🔹 Your Knight Cross game starts here -->
-  <div class="app">
-    <header>
-      <h1>Knight Cross — 60s challenge</h1>
-      <div class="tiny">Mobile-friendly • Tap to move</div>
-    </header>
-      <h1>Knight Cross — 60s challenge</h1>
-      <div class="tiny">Mobile-friendly • Tap to move</div>
-    </header>
-
-    <div class="card controls">
-      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
-        <input id="playerName" type="text" placeholder="Your name (will be recorded)" style="flex:2;min-width:120px;" />
-        <input id="playerDept" type="text" placeholder="Department" style="flex:2;min-width:100px;" />
-        <button id="startBtn">Start</button>
-        <button id="resetBtn" class="ghost">Reset</button>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px">
-        <div class="top-stats">
-          <div class="stat">Score: <span id="score">0</span></div>
-          <div class="stat">Moves: <span id="moves">0</span></div>
-          <div class="stat">Time: <span id="time">60</span>s</div>
+    <!-- Player Info Modal -->
+    <div id="playerInfoModal" class="modal active">
+        <div class="modal-content">
+            <h2>♞ Welcome to Knight Tour Challenge</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <div class="form-group">
+                    <label for="modalPlayerName">Name *</label>
+                    <input type="text" id="modalPlayerName" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="modalPlayerDepartment">Team *</label>
+                    <input type="text" id="modalPlayerDepartment" placeholder="Enter your Team">
+                </div>
+            </div>
+            <button class="start-button" onclick="showInstructions()">NEXT</button>
         </div>
-        <div class="controls-row">
-          <button id="hintBtn" class="ghost">Show legal moves</button>
-          <button id="sendScoreBtn">Send score</button>
-        </div>
-      </div>
-      <div id="scoreConfirmation" style="display:none;margin-top:8px" class="success-msg">✓ Score submitted successfully!</div>
     </div>
 
-    <div class="board-wrap">
-      <div id="board" class="board card" aria-label="Knight board"></div>
-
-      <div class="card board-info">
-        <div><strong>How to play</strong></div>
-        <div class="tiny">
-          Start the timer. A <strong>target</strong> square appears. Move the knight by tapping a highlighted legal cell. Reach target to earn points. Each reached target respawns the knight and a new target. Round lasts 60s.
+    <!-- Instruction Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <h2>♞ Knight Tour Challenge</h2>
+            <p><strong>How to Play:</strong></p>
+            <ul>
+                <li>A knight (blue square) and target (red square) will appear on the board</li>
+                <li>Click on highlighted green squares to move the knight</li>
+                <li>Reach the target to earn 1 point</li>
+                <li>Each successful move respawns both knight and target at new positions</li>
+                <li>You have 60 seconds to score as many points as possible!</li>
+            </ul>
+            <p><strong>Knight Movement:</strong></p>
+            <ul>
+                <li>Knights move in an "L" shape: 2 squares in one direction, then 1 square perpendicular</li>
+                <li>Valid moves are highlighted in green</li>
+            </ul>
+            <button class="start-button" onclick="startGame()">START GAME</button>
         </div>
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <button id="randomizeName" class="ghost">Randomize name</button>
-        </div>
-        <div class="tiny" style="margin-top:6px">After round, press <strong>Send score</strong> to save to Google Sheet.</div>
-      </div>
     </div>
 
-    <footer class="tiny card">
-      Built for simple Knight Cross play — Works without a local server!
-    </footer>
-  </div>
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal game-over-modal">
+        <div class="modal-content">
+            <div class="success-icon">🎉</div>
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <button class="start-button" onclick="submitScoreFromModal()">SEND SCORE</button>
+        </div>
+    </div>
 
-  <!-- Hidden form for CORS-free submission -->
-  <form id="hiddenForm" method="POST" target="hiddenFrame" style="display:none">
-    <input type="text" name="name" id="formName">
-    <input type="text" name="department" id="formDept">
-    <input type="text" name="score" id="formScore">
-    <input type="text" name="moves" id="formMoves">
-    <input type="text" name="timeRemaining" id="formTime">
-    <input type="text" name="timestamp" id="formTimestamp">
-  </form>
-  <iframe name="hiddenFrame" style="display:none"></iframe>
+    <div class="container">
+        <h1>♞ Knight Tour Challenge</h1>
 
-<script>
-/* ----- CONFIG: Replace with YOUR Apps Script URL ----- */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbww1chqDvwIgKps7-F5FYV5j7q5UzfneRlN-pGA3FyM-9lVARDs_ckKFs9EqNyFsO7Azw/exec";
+        <div class="info-bar">
+            <div class="info-item">
+                <div class="info-label">Timer</div>
+                <div class="info-value" id="timer">60</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Moves</div>
+                <div class="info-value" id="moves">0</div>
+            </div>
+        </div>
 
-/* --- QUIZ LOGIC --- */
-const correctAnswer = "B";
+        <div id="chessboard"></div>
 
-function checkAnswer(selected) {
-  if (selected === correctAnswer) {
-    Swal.fire({
-      title: "Correct!",
-      text: "You got the right answer. Game unlocked!",
-      icon: "success",
-      confirmButtonText: "Start Game"
-    }).then(() => {
-      document.getElementById("quizSection").style.display = "none";
-      document.getElementById("gameSection").style.display = "block";
-    });
-  } else {
-    Swal.fire({
-      title: "Wrong!",
-      text: "Please try again.",
-      icon: "error",
-      confirmButtonText: "OK"
-    });
-  }
-}
+        <button id="endGameBtn" onclick="endGameEarly()" style="display: none; margin-top: 20px; background: #ef4444;">
+            END GAME & SUBMIT SCORE
+        </button>
+    </div>
 
-/* Game variables */
-const rows = 8, cols = 8;
-let knight = {r: 0, c: 0};
-let target = {r: 4, c: 4};
-let score = 0, moves = 0, timeLeft = 60, timer = null;
-let running = false;
-let showHints = false;
+    <script>
+        // Configuration
+        const BOARD_SIZE = 8;
+        const TIME_LIMIT = 60;
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbww1chqDvwIgKps7-F5FYV5j7q5UzfneRlN-pGA3FyM-9lVARDs_ckKFs9EqNyFsO7Azw/exec';
 
-/* Utility */
-function idx(r,c){ return r*cols + c; }
-function inBounds(r,c){ return r>=0 && r<rows && c>=0 && c<cols; }
-function knightMoves(r,c){
-  const deltas = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
-  return deltas.map(d=>({r:r+d[0],c:c+d[1]})).filter(p=>inBounds(p.r,p.c));
-}
+        let knightPos = { row: 0, col: 0 };
+        let targetPos = { row: 7, col: 7 };
+        let score = 0;
+        let moves = 0;
+        let timer = TIME_LIMIT;
+        let timerInterval;
+        let gameActive = false;
+        let gameStarted = false;
+        let playerName = '';
+        let playerDepartment = '';
 
-/* Build board */
-const boardEl = document.getElementById('board');
-function buildBoard(){
-  boardEl.innerHTML = '';
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const cell = document.createElement('div');
-      cell.className = 'cell ' + (((r+c)%2===0)?'light':'dark');
-      cell.dataset.r = r; cell.dataset.c = c;
-      cell.addEventListener('click', onCellClick);
-      cell.addEventListener('touchstart', onCellClick);
-      boardEl.appendChild(cell);
-    }
-  }
-}
+        function showInstructions() {
+            const name = document.getElementById('modalPlayerName').value.trim();
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
 
-function render(){
-  const cells = boardEl.children;
-  for(let i=0;i<cells.length;i++){
-    const el = cells[i];
-    const r = +el.dataset.r, c = +el.dataset.c;
-    el.classList.toggle('target', r===target.r && c===target.c);
-    el.classList.toggle('knight', r===knight.r && c===knight.c);
-    el.classList.toggle('hint', false);
-    el.innerHTML = '';
-    if(r===knight.r && c===knight.c){
-      el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:56%;height:56%;border-radius:8px;background:var(--knight-bg);font-weight:700;color:#012;">♞</div>';
-    } else if(r===target.r && c===target.c){
-      el.innerHTML = '<div style="font-size:14px;font-weight:700">★</div>';
-    }
-  }
-  if(showHints) {
-    const movesList = knightMoves(knight.r, knight.c);
-    movesList.forEach(p=>{
-      const cell = boardEl.querySelector(`.cell[data-r='${p.r}'][data-c='${p.c}']`);
-      if(cell) cell.classList.add('hint');
-    });
-  }
-  document.getElementById('score').textContent = score;
-  document.getElementById('moves').textContent = moves;
-  document.getElementById('time').textContent = timeLeft;
-}
+            playerName = name;
+            playerDepartment = document.getElementById('modalPlayerDepartment').value.trim();
 
-/* Game flow */
-function placeRandomKnightAndTarget(){
-  knight.r = Math.floor(Math.random()*rows);
-  knight.c = Math.floor(Math.random()*cols);
-  do {
-    target.r = Math.floor(Math.random()*rows);
-    target.c = Math.floor(Math.random()*cols);
-  } while(target.r===knight.r && target.c===knight.c);
-}
+            document.getElementById('playerInfoModal').classList.remove('active');
+            document.getElementById('instructionModal').classList.add('active');
+        }
 
-function startRound(){
-  score = 0; moves = 0; timeLeft = 60; running = true;
-  placeRandomKnightAndTarget();
-  render();
-  if(timer) clearInterval(timer);
-  timer = setInterval(()=>{
-    timeLeft--;
-    document.getElementById('time').textContent = timeLeft;
-    if(timeLeft<=0){
-      stopRound();
-    }
-  }, 1000);
-}
+        function initBoard() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
 
-function stopRound(){
-  running = false;
-  if(timer) { clearInterval(timer); timer = null; }
-  alert('Round finished! Score: ' + score + '\nPress "Send score" to record.');
-}
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    square.addEventListener('click', () => handleSquareClick(row, col));
+                    board.appendChild(square);
+                }
+            }
 
-/* Interaction */
-function onCellClick(e){
-  e.preventDefault();
-  const el = (e.currentTarget || e.target);
-  const r = +el.dataset.r, c = +el.dataset.c;
-  if(!running) return;
-  const legal = knightMoves(knight.r, knight.c).some(p => p.r===r && p.c===c);
-  if(!legal) {
-    el.style.transition = 'transform 0.08s';
-    el.style.transform = 'scale(0.98)';
-    setTimeout(()=>{ el.style.transform=''; }, 80);
-    return;
-  }
-  knight.r = r; knight.c = c;
-  moves++;
-  if(r===target.r && c===target.c){
-    score++;
-    placeRandomKnightAndTarget();
-  }
-  render();
-}
+            randomizePositions();
+            updateBoard();
+        }
 
-/* UI wiring */
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  startRound();
-});
+        function randomizePositions() {
+            knightPos = {
+                row: Math.floor(Math.random() * BOARD_SIZE),
+                col: Math.floor(Math.random() * BOARD_SIZE)
+            };
 
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(timer) clearInterval(timer);
-  running=false; score=0; moves=0; timeLeft=60; placeRandomKnightAndTarget(); render();
-});
+            do {
+                targetPos = {
+                    row: Math.floor(Math.random() * BOARD_SIZE),
+                    col: Math.floor(Math.random() * BOARD_SIZE)
+                };
+            } while (targetPos.row === knightPos.row && targetPos.col === knightPos.col);
+        }
 
-document.getElementById('hintBtn').addEventListener('click', (ev)=>{
-  showHints = !showHints;
-  ev.target.textContent = showHints ? 'Hide legal moves' : 'Show legal moves';
-  render();
-});
+        function getValidMoves(pos) {
+            const moves = [
+                [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+                [1, -2], [1, 2], [2, -1], [2, 1]
+            ];
 
-document.getElementById('randomizeName').addEventListener('click', ()=>{
-  const names = ['Ace','Rookless','KnightRider','Hopster','CrossKing','Lancer','Knightly','ShortLeap'];
-  document.getElementById('playerName').value = names[Math.floor(Math.random()*names.length)] + Math.floor(Math.random()*90+10);
-});
+            return moves
+                .map(([dr, dc]) => ({ row: pos.row + dr, col: pos.col + dc }))
+                .filter(p => p.row >= 0 && p.row < BOARD_SIZE && p.col >= 0 && p.col < BOARD_SIZE);
+        }
 
-document.getElementById('sendScoreBtn').addEventListener('click', () => {
-  const name = (document.getElementById('playerName').value || '').trim();
-  const dept = (document.getElementById('playerDept').value || '').trim();
-  
-  if (!name) {
-    alert('Please enter your name before sending score.');
-    return;
-  }
+        function updateBoard() {
+            const squares = document.querySelectorAll('.square');
+            squares.forEach(sq => {
+                sq.classList.remove('knight', 'target', 'valid');
+                sq.textContent = '';
+            });
 
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_APPS_SCRIPT')) {
-    alert('Apps Script URL not set. Edit the APPS_SCRIPT_URL in the HTML.');
-    return;
-  }
+            // Draw knight
+            const knightSquare = document.querySelector(`[data-row="${knightPos.row}"][data-col="${knightPos.col}"]`);
+            if (knightSquare) {
+                knightSquare.classList.add('knight');
+                knightSquare.textContent = '♞';
+            }
 
-  // Use Google Forms-style submission (bulletproof method)
-  const params = new URLSearchParams();
-  params.append('name', name);
-  params.append('department', dept);
-  params.append('score', score);
-  params.append('moves', moves);
-  params.append('timeRemaining', timeLeft);
-  params.append('timestamp', new Date().toISOString());
+            // Draw target
+            const targetSquare = document.querySelector(`[data-row="${targetPos.row}"][data-col="${targetPos.col}"]`);
+            if (targetSquare) {
+                targetSquare.classList.add('target');
+                targetSquare.textContent = '🎯';
+            }
 
-  // Create temporary form and submit
-  const tempForm = document.createElement('form');
-  tempForm.method = 'POST';
-  tempForm.action = APPS_SCRIPT_URL;
-  tempForm.target = '_blank';
-  tempForm.style.display = 'none';
+            // Highlight valid moves
+            if (gameActive) {
+                const validMoves = getValidMoves(knightPos);
+                validMoves.forEach(move => {
+                    const sq = document.querySelector(`[data-row="${move.row}"][data-col="${move.col}"]`);
+                    if (sq) sq.classList.add('valid');
+                });
+            }
+        }
 
-  // Add all fields
-  ['name', 'department', 'score', 'moves', 'timeRemaining', 'timestamp'].forEach(key => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = params.get(key) || '';
-    tempForm.appendChild(input);
-  });
+        function handleSquareClick(row, col) {
+            if (!gameActive) return;
 
-  document.body.appendChild(tempForm);
-  tempForm.submit();
-  document.body.removeChild(tempForm);
+            const validMoves = getValidMoves(knightPos);
+            const isValid = validMoves.some(m => m.row === row && m.col === col);
 
-  // Show confirmation
-  const conf = document.getElementById('scoreConfirmation');
-  conf.style.display = 'block';
-  setTimeout(() => { conf.style.display = 'none'; }, 4000);
-  
-  console.log('Score submitted:', { name, dept, score, moves, timeLeft });
-});
+            if (isValid) {
+                knightPos = { row, col };
+                moves++;
+                document.getElementById('moves').textContent = moves;
 
-/* init */
-buildBoard();
-placeRandomKnightAndTarget();
-render();
-</script>
+                // Check if reached target
+                if (row === targetPos.row && col === targetPos.col) {
+                    score++;
+                    document.getElementById('score').textContent = score;
+                    randomizePositions();
+                }
+
+                updateBoard();
+            }
+        }
+
+        function startGame() {
+            document.getElementById('instructionModal').classList.remove('active');
+            gameActive = true;
+            gameStarted = true;
+            document.getElementById('endGameBtn').style.display = 'block';
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                if (timer <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGameEarly() {
+            if (confirm('Are you sure you want to end the game and submit your score?')) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('endGameBtn').style.display = 'none';
+
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const message = document.getElementById('gameOverMessage');
+
+            title.textContent = '🎉 Time\'s Up!';
+            message.textContent = `You scored ${score} point${score !== 1 ? 's' : ''} with ${moves} move${moves !== 1 ? 's' : ''}!`;
+
+            modal.classList.add('active');
+        }
+
+        function submitScoreFromModal() {
+            const modal = document.getElementById('gameOverModal');
+            const button = modal.querySelector('button');
+            
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            // Create form dynamically
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = '_blank';
+
+            const fields = {
+                name: playerName,
+                department: playerDepartment,
+                score: score.toString(),
+                moves: moves.toString(),
+                timeRemaining: timer.toString(),
+                timestamp: new Date().toISOString()
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            button.textContent = 'Score Sent!';
+            setTimeout(() => {
+                modal.classList.remove('active');
+                resetGame();
+            }, 1500);
+        }
+
+        function resetGame() {
+            document.getElementById('gameOverModal').classList.remove('active');
+            timer = TIME_LIMIT;
+            score = 0;
+            moves = 0;
+            playerName = '';
+            playerDepartment = '';
+            document.getElementById('timer').textContent = timer;
+            document.getElementById('score').textContent = score;
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('modalPlayerName').value = '';
+            document.getElementById('modalPlayerDepartment').value = '';
+            document.getElementById('endGameBtn').style.display = 'none';
+            initBoard();
+            document.getElementById('playerInfoModal').classList.add('active');
+        }
+
+        // Initialize
+        initBoard();
+    </script>
 </body>
 </html>

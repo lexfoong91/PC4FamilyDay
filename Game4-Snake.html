@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game 4 - Snake Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .container {
+            background: white;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 15px;
+            max-width: 100vw;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                max-width: 500px;
+                min-height: auto;
+            }
+        }
+
+        h1 {
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            gap: 8px;
+        }
+
+        .info-item {
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 10px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        #gameCanvas {
+            width: calc(100vw - 30px);
+            height: calc(100vw - 30px);
+            max-width: 400px;
+            max-height: 400px;
+            background: #1f2937;
+            margin: 0 auto 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            touch-action: none;
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            #gameCanvas {
+                width: 400px;
+                height: 400px;
+            }
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto 15px;
+        }
+
+        .control-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 24px;
+            padding: 15px;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .control-btn:active {
+            background: #5568d3;
+            transform: scale(0.95);
+        }
+
+        .control-btn.empty {
+            background: transparent;
+            pointer-events: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+            touch-action: manipulation;
+        }
+
+        button:active {
+            background: #5568d3;
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .modal-content {
+                max-width: 500px;
+                padding: 40px;
+            }
+        }
+
+        .modal-content h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .modal-content ul {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .modal-content li {
+            color: #374151;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .start-button {
+            background: #10b981;
+            padding: 14px 40px;
+            font-size: 17px;
+            margin-top: 20px;
+        }
+
+        .start-button:active {
+            background: #059669;
+        }
+
+        .game-over-modal .modal-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .success-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        body {
+            overscroll-behavior-y: contain;
+        }
+
+        .swipe-hint {
+            text-align: center;
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Player Info Modal -->
+    <div id="playerInfoModal" class="modal active">
+        <div class="modal-content">
+            <h2>🐍 Welcome to Snake Challenge</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <div class="form-group">
+                    <label for="modalPlayerName">Name *</label>
+                    <input type="text" id="modalPlayerName" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="modalPlayerDepartment">Team *</label>
+                    <input type="text" id="modalPlayerDepartment" required placeholder="Enter your Team">
+                </div>
+            </div>
+            <button class="start-button" onclick="showInstructions()">NEXT</button>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <h2>🐍 Snake Challenge</h2>
+            <p><strong>How to Play:</strong></p>
+            <ul>
+                <li>Swipe on the game board to change direction</li>
+                <li>Eat the red food (🔴) to grow and score points</li>
+                <li>Avoid hitting walls or your own tail</li>
+                <li>Eat as much food as possible in 60 seconds</li>
+            </ul>
+            <p><strong>Scoring:</strong></p>
+            <ul>
+                <li>Each food eaten: +1 point</li>
+                <li>Time limit: 60 seconds</li>
+                <li>Game ends if you hit wall or tail</li>
+            </ul>
+            <p><strong>Controls:</strong></p>
+            <ul>
+                <li>Swipe UP/DOWN/LEFT/RIGHT on the game board</li>
+                <li>Or use the arrow buttons below the game</li>
+            </ul>
+            <button class="start-button" onclick="startGame()">START GAME</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal game-over-modal">
+        <div class="modal-content">
+            <div class="success-icon" id="gameOverIcon">🎉</div>
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <button class="start-button" onclick="submitScoreFromModal()">SEND SCORE</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🐍 Snake Challenge</h1>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <div class="info-label">Timer</div>
+                <div class="info-value" id="timer">60</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Length</div>
+                <div class="info-value" id="length">3</div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="swipe-hint">Swipe on the game board to control the snake</div>
+
+        <div class="controls">
+            <div class="control-btn empty"></div>
+            <button class="control-btn" onclick="changeDirection('UP')">▲</button>
+            <div class="control-btn empty"></div>
+            <button class="control-btn" onclick="changeDirection('LEFT')">◀</button>
+            <button class="control-btn" onclick="changeDirection('DOWN')">▼</button>
+            <button class="control-btn" onclick="changeDirection('RIGHT')">▶</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const GRID_SIZE = 20;
+        const INITIAL_SPEED = 150; // ms per move
+        const TIME_LIMIT = 60;
+        
+        // ⚠️ IMPORTANT: Replace this with your actual Apps Script URL
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_gLOdoYJRAejwd_Hj0-8Wb_izWdnxK3iBlimqdSW4C5donYAsznQFs4gkCTTdxI8aPA/exec';
+
+        let canvas, ctx;
+        let cellSize;
+        let snake = [];
+        let direction = 'RIGHT';
+        let nextDirection = 'RIGHT';
+        let food = null;
+        let score = 0;
+        let timer = TIME_LIMIT;
+        let timerInterval;
+        let gameInterval;
+        let gameActive = false;
+        let gameStarted = false;
+        let playerName = '';
+        let playerDepartment = '';
+        let gameEndReason = '';
+
+        // Touch/Swipe handling
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        function showInstructions() {
+            const name = document.getElementById('modalPlayerName').value.trim();
+            const team = document.getElementById('modalPlayerDepartment').value.trim();
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+
+            if (!team) {
+                alert('Please enter your team');
+                return;
+            }
+
+            playerName = name;
+            playerDepartment = team;
+
+            document.getElementById('playerInfoModal').classList.remove('active');
+            document.getElementById('instructionModal').classList.add('active');
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            const container = canvas.parentElement;
+            const size = Math.min(400, window.innerWidth - 30);
+            canvas.width = size;
+            canvas.height = size;
+            cellSize = size / GRID_SIZE;
+
+            // Add touch event listeners for swipe
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            if (!gameActive) return;
+
+            const touch = e.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const minSwipeDistance = 30;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe
+                if (Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0 && direction !== 'LEFT') {
+                        nextDirection = 'RIGHT';
+                    } else if (deltaX < 0 && direction !== 'RIGHT') {
+                        nextDirection = 'LEFT';
+                    }
+                }
+            } else {
+                // Vertical swipe
+                if (Math.abs(deltaY) > minSwipeDistance) {
+                    if (deltaY > 0 && direction !== 'UP') {
+                        nextDirection = 'DOWN';
+                    } else if (deltaY < 0 && direction !== 'DOWN') {
+                        nextDirection = 'UP';
+                    }
+                }
+            }
+        }
+
+        function changeDirection(newDirection) {
+            if (!gameActive) return;
+
+            // Prevent reversing into itself
+            if (newDirection === 'UP' && direction !== 'DOWN') nextDirection = 'UP';
+            else if (newDirection === 'DOWN' && direction !== 'UP') nextDirection = 'DOWN';
+            else if (newDirection === 'LEFT' && direction !== 'RIGHT') nextDirection = 'LEFT';
+            else if (newDirection === 'RIGHT' && direction !== 'LEFT') nextDirection = 'RIGHT';
+        }
+
+        function initSnake() {
+            snake = [
+                { x: 10, y: 10 },
+                { x: 9, y: 10 },
+                { x: 8, y: 10 }
+            ];
+            direction = 'RIGHT';
+            nextDirection = 'RIGHT';
+            score = 0;
+            updateDisplay();
+            spawnFood();
+        }
+
+        function spawnFood() {
+            let validPosition = false;
+            let newFood;
+
+            while (!validPosition) {
+                newFood = {
+                    x: Math.floor(Math.random() * GRID_SIZE),
+                    y: Math.floor(Math.random() * GRID_SIZE)
+                };
+
+                // Check if food spawns on snake
+                validPosition = !snake.some(segment => 
+                    segment.x === newFood.x && segment.y === newFood.y
+                );
+            }
+
+            food = newFood;
+        }
+
+        function drawGame() {
+            // Clear canvas
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid lines
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= GRID_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvas.width, i * cellSize);
+                ctx.stroke();
+            }
+
+            // Draw snake
+            snake.forEach((segment, index) => {
+                if (index === 0) {
+                    // Head
+                    ctx.fillStyle = '#10b981';
+                } else {
+                    // Body
+                    ctx.fillStyle = '#34d399';
+                }
+                ctx.fillRect(
+                    segment.x * cellSize + 1,
+                    segment.y * cellSize + 1,
+                    cellSize - 2,
+                    cellSize - 2
+                );
+            });
+
+            // Draw food
+            if (food) {
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(
+                    food.x * cellSize + cellSize / 2,
+                    food.y * cellSize + cellSize / 2,
+                    cellSize / 2 - 2,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+        }
+
+        function moveSnake() {
+            if (!gameActive) return;
+
+            direction = nextDirection;
+
+            const head = { ...snake[0] };
+
+            // Move head
+            switch (direction) {
+                case 'UP':
+                    head.y--;
+                    break;
+                case 'DOWN':
+                    head.y++;
+                    break;
+                case 'LEFT':
+                    head.x--;
+                    break;
+                case 'RIGHT':
+                    head.x++;
+                    break;
+            }
+
+            // Check wall collision
+            if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
+                gameEndReason = 'hit the wall';
+                endGame();
+                return;
+            }
+
+            // Check self collision
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameEndReason = 'hit your tail';
+                endGame();
+                return;
+            }
+
+            snake.unshift(head);
+
+            // Check food collision
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                updateDisplay();
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            drawGame();
+        }
+
+        function startGame() {
+            document.getElementById('instructionModal').classList.remove('active');
+            gameActive = true;
+            gameStarted = true;
+            
+            initSnake();
+            drawGame();
+            
+            gameInterval = setInterval(moveSnake, INITIAL_SPEED);
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                if (timer <= 0) {
+                    gameEndReason = 'time ran out';
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            clearInterval(gameInterval);
+
+            const modal = document.getElementById('gameOverModal');
+            const icon = document.getElementById('gameOverIcon');
+            const title = document.getElementById('gameOverTitle');
+            const message = document.getElementById('gameOverMessage');
+
+            if (gameEndReason === 'time ran out') {
+                icon.textContent = '⏰';
+                title.textContent = 'Time\'s Up!';
+                message.textContent = `You ate ${score} food in 60 seconds! Final length: ${snake.length}`;
+            } else {
+                icon.textContent = '💥';
+                title.textContent = 'Game Over!';
+                message.textContent = `You ${gameEndReason}! Score: ${score} food eaten. Final length: ${snake.length}`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function submitScoreFromModal() {
+            const modal = document.getElementById('gameOverModal');
+            const button = modal.querySelector('button');
+            
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+                alert('⚠️ Apps Script URL not configured!\n\nPlease replace YOUR_APPS_SCRIPT_URL_HERE with your actual deployed Apps Script URL.');
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = '_blank';
+
+            const fields = {
+                name: playerName,
+                department: playerDepartment,
+                score: score.toString(),
+                length: snake.length.toString(),
+                timeRemaining: timer.toString(),
+                endReason: gameEndReason,
+                timestamp: new Date().toISOString()
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            button.textContent = 'Score Sent!';
+            setTimeout(() => {
+                modal.classList.remove('active');
+                resetGame();
+            }, 1500);
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('length').textContent = snake.length;
+        }
+
+        function resetGame() {
+            score = 0;
+            timer = TIME_LIMIT;
+            gameActive = false;
+            gameStarted = false;
+            gameEndReason = '';
+            document.getElementById('timer').textContent = TIME_LIMIT;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('length').textContent = '3';
+            document.getElementById('playerInfoModal').classList.add('active');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initCanvas();
+            drawGame();
+        });
+
+        // Recalculate canvas size on window resize
+        window.addEventListener('resize', () => {
+            if (!gameActive) {
+                initCanvas();
+                if (snake.length > 0) {
+                    drawGame();
+                }
+            }
+        });
+
+        // Keyboard controls for desktop
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    changeDirection('UP');
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    changeDirection('DOWN');
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    changeDirection('LEFT');
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    changeDirection('RIGHT');
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

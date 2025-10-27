@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 2 - Minesweeper Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .info-item {
+            background: #f3f4f6;
+            padding: 10px 20px;
+            border-radius: 10px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        #minesweeperBoard {
+            display: grid;
+            gap: 2px;
+            background: #9ca3af;
+            padding: 2px;
+            border-radius: 10px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            background: #d1d5db;
+            border: 3px solid #e5e7eb;
+            border-top-color: #f3f4f6;
+            border-left-color: #f3f4f6;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: all 0.1s;
+        }
+
+        .cell:hover:not(.revealed):not(.flagged) {
+            background: #e5e7eb;
+        }
+
+        .cell.revealed {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            cursor: default;
+        }
+
+        .cell.flagged {
+            background: #fef3c7;
+        }
+
+        .cell.mine {
+            background: #fee2e2;
+        }
+
+        .cell.number-1 { color: #3b82f6; }
+        .cell.number-2 { color: #10b981; }
+        .cell.number-3 { color: #ef4444; }
+        .cell.number-4 { color: #8b5cf6; }
+        .cell.number-5 { color: #f59e0b; }
+        .cell.number-6 { color: #06b6d4; }
+        .cell.number-7 { color: #000; }
+        .cell.number-8 { color: #6b7280; }
+
+        .form-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-content ul {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+
+        .modal-content li {
+            color: #374151;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .start-button {
+            background: #10b981;
+            padding: 15px 40px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .start-button:hover {
+            background: #059669;
+        }
+
+        .game-over-modal .modal-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Player Info Modal -->
+    <div id="playerInfoModal" class="modal active">
+        <div class="modal-content">
+            <h2>🎮 Welcome to Minesweeper Challenge</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <div class="form-group">
+                    <label for="modalPlayerName">Name *</label>
+                    <input type="text" id="modalPlayerName" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="modalPlayerDepartment">Team *</label>
+                    <input type="text" id="modalPlayerDepartment" placeholder="Enter your Team">
+                </div>
+            </div>
+            <button class="start-button" onclick="showInstructions()">NEXT</button>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <h2>🎮 Minesweeper Challenge</h2>
+            <p><strong>How to Play:</strong></p>
+            <ul>
+                <li><strong>Click:</strong> Reveal a cell</li>
+                <!-- <li><strong>Right Click:</strong> Place/remove flag</li> -->
+                <li>Numbers show how many mines are adjacent</li>
+                <li>Reveal all safe cells to win!</li>
+            </ul>
+            <p><strong>Scoring System:</strong></p>
+            <ul>
+                <li>Time limit: 60 seconds</li>
+                <li>Maximum score: 10 points</li>
+                <li>Each mine clicked: -1 point</li>
+                <li>Complete within 60s: 10 - mistakes</li>
+                <li>Incomplete: 5 - mistakes</li>
+            </ul>
+            <button class="start-button" onclick="startGame()">START GAME</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal game-over-modal">
+        <div class="modal-content">
+            <div class="success-icon">🎉</div>
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <button class="start-button" onclick="submitScoreFromModal()">SEND SCORE</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>💣 Minesweeper Challenge</h1>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <div class="info-label">Timer</div>
+                <div class="info-value" id="timer">60</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mines</div>
+                <div class="info-value" id="mineCount">10</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mistakes</div>
+                <div class="info-value" id="mistakes">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">10</div>
+            </div>
+        </div>
+
+        <div id="minesweeperBoard"></div>
+    </div>
+
+    <script>
+        // Configuration - Easy to modify for different games
+        const ROWS = 8;
+        const COLS = 8;
+        const MINES = 10;
+        const TIME_LIMIT = 60;
+        
+        // ⚠️ IMPORTANT: Replace this with your actual Apps Script URL
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw463GpoBGHVaYXQ2Dxgvt7FJbfZFQy6OLisTpGdTOLrFDh3amEbL2kydgCE9uYT6fwKg/exec'; 
+        // Example format: 'https://script.google.com/macros/s/AKfycby.../exec'
+        
+        // Validate URL on page load
+        if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+            console.warn('⚠️ Apps Script URL not configured! Score submission will not work.');
+            console.warn('Please update APPS_SCRIPT_URL with your deployed Apps Script web app URL.');
+        }
+
+        let board = [];
+        let revealed = [];
+        let flagged = [];
+        let gameActive = false;
+        let gameStarted = false;
+        let timer = TIME_LIMIT;
+        let timerInterval;
+        let mistakeCount = 0;
+        let currentScore = 10;
+        let gameCompleted = false;
+        let playerName = '';
+        let playerDepartment = '';
+
+        function showInstructions() {
+            const name = document.getElementById('modalPlayerName').value.trim();
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+
+            playerName = name;
+            playerDepartment = document.getElementById('modalPlayerDepartment').value.trim();
+
+            document.getElementById('playerInfoModal').classList.remove('active');
+            document.getElementById('instructionModal').classList.add('active');
+        }
+
+        function initBoard() {
+            const boardElement = document.getElementById('minesweeperBoard');
+            boardElement.style.gridTemplateColumns = `repeat(${COLS}, 40px)`;
+            boardElement.innerHTML = '';
+
+            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            revealed = Array(ROWS).fill().map(() => Array(COLS).fill(false));
+            flagged = Array(ROWS).fill().map(() => Array(COLS).fill(false));
+
+            // Place mines
+            let minesPlaced = 0;
+            while (minesPlaced < MINES) {
+                const row = Math.floor(Math.random() * ROWS);
+                const col = Math.floor(Math.random() * COLS);
+                if (board[row][col] !== -1) {
+                    board[row][col] = -1;
+                    minesPlaced++;
+                }
+            }
+
+            // Calculate numbers
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] === -1) continue;
+                    let count = 0;
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = r + dr;
+                            const nc = c + dc;
+                            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === -1) {
+                                count++;
+                            }
+                        }
+                    }
+                    board[r][c] = count;
+                }
+            }
+
+            // Create cells
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('click', () => revealCell(r, c));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleFlag(r, c);
+                    });
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function startGame() {
+            document.getElementById('instructionModal').classList.remove('active');
+            gameActive = true;
+            gameStarted = true;
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                if (timer <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function revealCell(row, col) {
+            if (!gameActive || revealed[row][col] || flagged[row][col]) return;
+
+            revealed[row][col] = true;
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            cell.classList.add('revealed');
+
+            if (board[row][col] === -1) {
+                // Hit a mine
+                cell.textContent = '💣';
+                cell.classList.add('mine');
+                mistakeCount++;
+                currentScore = Math.max(0, currentScore - 1);
+                updateDisplay();
+                // Don't end game, just count mistake
+            } else {
+                const num = board[row][col];
+                if (num > 0) {
+                    cell.textContent = num;
+                    cell.classList.add(`number-${num}`);
+                } else {
+                    // Reveal adjacent cells
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = row + dr;
+                            const nc = col + dc;
+                            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                                revealCell(nr, nc);
+                            }
+                        }
+                    }
+                }
+            }
+
+            checkWin();
+        }
+
+        function toggleFlag(row, col) {
+            if (!gameActive || revealed[row][col]) return;
+
+            flagged[row][col] = !flagged[row][col];
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            
+            if (flagged[row][col]) {
+                cell.classList.add('flagged');
+                cell.textContent = '🚩';
+            } else {
+                cell.classList.remove('flagged');
+                cell.textContent = '';
+            }
+
+            updateDisplay();
+            checkWin();
+        }
+
+        function checkWin() {
+            let allSafeRevealed = true;
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] !== -1 && !revealed[r][c]) {
+                        allSafeRevealed = false;
+                        break;
+                    }
+                }
+                if (!allSafeRevealed) break;
+            }
+
+            // Game ends when all safe cells are revealed (regardless of flag status)
+            if (allSafeRevealed) {
+                endGame(true);
+            }
+        }
+
+        function endGame(completed) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            gameCompleted = completed;
+
+            // Calculate final score
+            if (completed) {
+                currentScore = Math.max(0, 10 - mistakeCount);
+            } else {
+                currentScore = Math.max(0, 5 - mistakeCount);
+            }
+
+            updateDisplay();
+
+            // Show game over modal
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const message = document.getElementById('gameOverMessage');
+
+            if (completed) {
+                title.textContent = '🎉 Congratulations!';
+                message.textContent = `You completed the game with ${mistakeCount} mistake(s). Your score: ${currentScore}/10`;
+            } else {
+                title.textContent = '⏰ Time\'s Up!';
+                message.textContent = `Game ended with ${mistakeCount} mistake(s). Your score: ${currentScore}/10`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function submitScoreFromModal() {
+            const modal = document.getElementById('gameOverModal');
+            const button = modal.querySelector('button');
+            
+            // Validate URL is set
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+                alert('⚠️ Apps Script URL not configured!\n\nPlease replace YOUR_APPS_SCRIPT_URL_HERE with your actual deployed Apps Script URL.');
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            // Create form dynamically (same as Game 1)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = '_blank';
+
+            // Add all fields as hidden inputs
+            const fields = {
+                name: playerName,
+                department: playerDepartment,
+                score: currentScore.toString(),
+                mistakes: mistakeCount.toString(),
+                timeRemaining: timer.toString(),
+                completed: gameCompleted.toString(),
+                timestamp: new Date().toISOString()
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            // Update UI
+            button.textContent = 'Score Sent!';
+            setTimeout(() => {
+                modal.classList.remove('active');
+                resetGame();
+            }, 1500);
+        }
+
+        function updateDisplay() {
+            document.getElementById('mistakes').textContent = mistakeCount;
+            document.getElementById('score').textContent = currentScore;
+            
+            let flagCount = 0;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (flagged[r][c]) flagCount++;
+                }
+            }
+            document.getElementById('mineCount').textContent = MINES - flagCount;
+        }
+
+        // Initialize
+        initBoard();
+    </script>
+</body>
+</html>
