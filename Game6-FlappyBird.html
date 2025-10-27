@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 6 - Flappy Bird Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 15px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .info-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            max-width: 400px;
+            height: 500px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #6b7280;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .modal-content ul {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .modal-content li {
+            color: #374151;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .start-button {
+            background: #10b981;
+            padding: 15px;
+            font-size: 18px;
+        }
+
+        .start-button:hover {
+            background: #059669;
+        }
+
+        .game-over-modal .modal-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .tap-hint {
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            #gameCanvas {
+                height: 450px;
+            }
+
+            .info-value {
+                font-size: 18px;
+            }
+
+            .modal-content h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #gameCanvas {
+                height: 400px;
+            }
+
+            .info-item {
+                padding: 6px 8px;
+            }
+
+            .info-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="modal active">
+        <div class="modal-content">
+            <h2>🔐 Access Quiz</h2>
+            <p>Answer the question below to proceed:</p>
+            <div class="form-group">
+                <label for="quizAnswer">What is the keyword?</label>
+                <input type="text" id="quizAnswer" placeholder="Enter the keyword" autocomplete="off">
+                <div class="error-message" id="quizError">Incorrect answer. Please try again.</div>
+            </div>
+            <button onclick="checkQuizAnswer()">SUBMIT</button>
+        </div>
+    </div>
+
+    <!-- Player Info Modal -->
+    <div id="playerInfoModal" class="modal">
+        <div class="modal-content">
+            <h2>🎮 Welcome to Flappy Bird Challenge</h2>
+            <div class="form-group">
+                <label for="modalPlayerName">Name *</label>
+                <input type="text" id="modalPlayerName" required placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="modalPlayerDepartment">Team *</label>
+                <input type="text" id="modalPlayerDepartment" placeholder="Enter your Team">
+            </div>
+            <button class="start-button" onclick="showInstructions()">NEXT</button>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <h2>🐦 Flappy Bird Challenge</h2>
+            <p><strong>How to Play:</strong></p>
+            <ul>
+                <li><strong>Tap/Click:</strong> Make the bird fly upward</li>
+                <li>Avoid hitting the pipes or ground</li>
+                <li>Survive as long as possible!</li>
+                <li>Speed increases every 15 seconds</li>
+            </ul>
+            <p><strong>Scoring System:</strong></p>
+            <ul>
+                <li>Time limit: 60 seconds</li>
+                <li>Maximum score: 10 points</li>
+                <li>Score = (Survival Time ÷ 10)</li>
+                <li>Survive full 60s without hitting: 10 points</li>
+                <li>Hit obstacle: Score = Survival Time ÷ 10</li>
+            </ul>
+            <button class="start-button" onclick="startGame()">START GAME</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal game-over-modal">
+        <div class="modal-content">
+            <div class="success-icon">🎉</div>
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <button class="start-button" onclick="submitScoreFromModal()">SEND SCORE</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🐦 Flappy Bird Challenge</h1>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <div class="info-label">Timer</div>
+                <div class="info-value" id="timer">60</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Survival</div>
+                <div class="info-value" id="survival">0s</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0.0</div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+        <div class="tap-hint" id="tapHint">👆 Tap anywhere to fly!</div>
+    </div>
+
+    <script>
+        // Configuration
+        const TIME_LIMIT = 60;
+        const QUIZ_ANSWER = "keyword";
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynSFJLkUPv9Rzxr7Khsj6ABjiy4CwozIT_ge89ls-nGD1sQz1sUCe_jHIhfh_030Wd3g/exec';
+
+        let playerName = '';
+        let playerDepartment = '';
+        let gameActive = false;
+        let timer = TIME_LIMIT;
+        let survivalTime = 0;
+        let currentScore = 0;
+        let gameCompleted = false;
+        let timerInterval;
+        let survivalInterval;
+
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            const maxWidth = 400;
+            const maxHeight = 500;
+            canvas.width = Math.min(maxWidth, window.innerWidth - 50);
+            canvas.height = maxHeight;
+        }
+        resizeCanvas();
+
+        // Bird properties - EASIER: Smaller bird size, better jump
+        const bird = {
+            x: 80,
+            y: 250,
+            width: 25,  // Reduced from 30
+            height: 25, // Reduced from 30
+            velocity: 0,
+            gravity: 0.5,   // Reduced from 0.6 (slower fall)
+            jump: -8        // Changed from -10 (smoother jump)
+        };
+
+        // Pipe properties - EASIER: Wider gap, slower speed
+        let pipes = [];
+        const pipeWidth = 50;
+        const pipeGap = 220;  // Increased from 150 (much easier to pass)
+        let pipeSpeed = 1.5;    // Reduced from 2.5 (slower movement)
+        let frameCount = 0;
+
+        // Quiz functionality
+        function checkQuizAnswer() {
+            const answer = document.getElementById('quizAnswer').value.trim();
+            const errorMsg = document.getElementById('quizError');
+
+            if (answer.toLowerCase().includes(QUIZ_ANSWER.toLowerCase())) {
+                document.getElementById('quizModal').classList.remove('active');
+                document.getElementById('playerInfoModal').classList.add('active');
+                errorMsg.classList.remove('show');
+            } else {
+                errorMsg.classList.add('show');
+                document.getElementById('quizAnswer').value = '';
+                document.getElementById('quizAnswer').focus();
+            }
+        }
+
+        document.getElementById('quizAnswer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkQuizAnswer();
+        });
+
+        function showInstructions() {
+            const name = document.getElementById('modalPlayerName').value.trim();
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+
+            playerName = name;
+            playerDepartment = document.getElementById('modalPlayerDepartment').value.trim();
+
+            document.getElementById('playerInfoModal').classList.remove('active');
+            document.getElementById('instructionModal').classList.add('active');
+        }
+
+        function startGame() {
+            document.getElementById('instructionModal').classList.remove('active');
+            document.getElementById('tapHint').style.display = 'block';
+            gameActive = true;
+            
+            // Reset game state
+            bird.y = 250;
+            bird.velocity = 0;
+            pipes = [];
+            frameCount = 0;
+            survivalTime = 0;
+            currentScore = 0;
+            pipeSpeed = 2;  // Reset to slower speed
+            
+            startTimer();
+            startSurvivalCounter();
+            gameLoop();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                
+                // Increase speed every 15 seconds - MORE GRADUAL
+                if (timer === 45 || timer === 30 || timer === 15) {
+                    pipeSpeed += 0.5;  // Reduced from 0.8 (slower increase)
+                }
+                
+                if (timer <= 0) {
+                    endGame(true);
+                }
+            }, 1000);
+        }
+
+        function startSurvivalCounter() {
+            survivalInterval = setInterval(() => {
+                if (gameActive) {
+                    survivalTime++;
+                    currentScore = (survivalTime / 10).toFixed(1);
+                    document.getElementById('survival').textContent = survivalTime + 's';
+                    document.getElementById('score').textContent = currentScore;
+                }
+            }, 1000);
+        }
+
+        // Handle input
+        canvas.addEventListener('click', () => {
+            if (gameActive) {
+                bird.velocity = bird.jump;
+                document.getElementById('tapHint').style.display = 'none';
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameActive) {
+                bird.velocity = bird.jump;
+                document.getElementById('tapHint').style.display = 'none';
+            }
+        });
+
+        function createPipe() {
+            const minHeight = 80;  // Increased from 50 (more room at top)
+            const maxHeight = canvas.height - pipeGap - minHeight - 80; // More room at bottom
+            const height = Math.floor(Math.random() * maxHeight) + minHeight;
+            
+            pipes.push({
+                x: canvas.width,
+                topHeight: height,
+                bottomY: height + pipeGap,
+                passed: false
+            });
+        }
+
+        function drawBird() {
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(bird.x + bird.width/2, bird.y + bird.height/2, bird.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bird.x + bird.width/2 + 4, bird.y + bird.height/2 - 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Beak
+            ctx.fillStyle = '#FF6347';
+            ctx.beginPath();
+            ctx.moveTo(bird.x + bird.width, bird.y + bird.height/2);
+            ctx.lineTo(bird.x + bird.width + 6, bird.y + bird.height/2 - 2);
+            ctx.lineTo(bird.x + bird.width + 6, bird.y + bird.height/2 + 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawPipes() {
+            ctx.fillStyle = '#228B22';
+            pipes.forEach(pipe => {
+                // Top pipe
+                ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+                // Top pipe cap
+                ctx.fillStyle = '#2E8B57';
+                ctx.fillRect(pipe.x - 5, pipe.topHeight - 20, pipeWidth + 10, 20);
+                
+                // Bottom pipe
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(pipe.x, pipe.bottomY, pipeWidth, canvas.height - pipe.bottomY);
+                // Bottom pipe cap
+                ctx.fillStyle = '#2E8B57';
+                ctx.fillRect(pipe.x - 5, pipe.bottomY, pipeWidth + 10, 20);
+            });
+        }
+
+        function drawGround() {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+        }
+
+        function checkCollision() {
+            // More forgiving collision - smaller hitbox
+            const hitboxReduction = 3; // Pixels to reduce from each side
+            const birdLeft = bird.x + hitboxReduction;
+            const birdRight = bird.x + bird.width - hitboxReduction;
+            const birdTop = bird.y + hitboxReduction;
+            const birdBottom = bird.y + bird.height - hitboxReduction;
+
+            // Check ground collision
+            if (birdBottom >= canvas.height - 30 || birdTop <= 0) {
+                return true;
+            }
+
+            // Check pipe collision with smaller hitbox
+            for (let pipe of pipes) {
+                if (birdRight > pipe.x && birdLeft < pipe.x + pipeWidth) {
+                    if (birdTop < pipe.topHeight || birdBottom > pipe.bottomY) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function updateGame() {
+            if (!gameActive) return;
+
+            // Update bird
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            // Create new pipes - EASIER: More spacing
+            frameCount++;
+            if (frameCount % 110 === 0) {  // Increased from 90 (more time between pipes)
+                createPipe();
+            }
+
+            // Update pipes
+            pipes.forEach(pipe => {
+                pipe.x -= pipeSpeed;
+            });
+
+            // Remove off-screen pipes
+            pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
+
+            // Check collision
+            if (checkCollision()) {
+                endGame(false);
+            }
+        }
+
+        function drawGame() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#E0F6FF');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawPipes();
+            drawGround();
+            drawBird();
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(completed) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            clearInterval(survivalInterval);
+            gameCompleted = completed;
+
+            // Calculate final score
+            if (completed) {
+                currentScore = 10.0; // Full score for completing without collision
+            } else {
+                currentScore = (survivalTime / 10).toFixed(1);
+            }
+
+            document.getElementById('score').textContent = currentScore;
+
+            // Show game over modal
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const message = document.getElementById('gameOverMessage');
+
+            if (completed) {
+                title.textContent = '🎉 Perfect Flight!';
+                message.textContent = `You survived the full 60 seconds without hitting anything! Score: ${currentScore}/10`;
+            } else {
+                title.textContent = '💥 Crashed!';
+                message.textContent = `You survived for ${survivalTime} seconds. Your score: ${currentScore}/10`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function submitScoreFromModal() {
+            const modal = document.getElementById('gameOverModal');
+            const button = modal.querySelector('button');
+            
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxNHjGPOZvgpsMBCJFhmeksnxOBX0HGAoyWvKMDPhcISTyT2FOlWPBlEIpK8nLKfpuFQw/exec') {
+                alert('⚠️ Apps Script URL not configured!');
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = '_blank';
+
+            const fields = {
+                name: playerName,
+                department: playerDepartment,
+                score: parseFloat(currentScore).toString(),
+                survivalTime: survivalTime.toString(),
+                completed: gameCompleted.toString(),
+                timeRemaining: timer.toString(),
+                timestamp: new Date().toISOString()
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            button.textContent = 'Score Sent!';
+            setTimeout(() => {
+                modal.classList.remove('active');
+                location.reload();
+            }, 1500);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
