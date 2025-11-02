@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 8 - Who's Lying?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 25px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .info-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f3f4f6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .puzzle-container {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .statements {
+            margin-bottom: 25px;
+        }
+
+        .statement {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .statement-person {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .statement-text {
+            color: #374151;
+            font-size: 15px;
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 15px;
+            color: #374151;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #ede9fe;
+        }
+
+        .option.correct {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .option.incorrect {
+            border-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #submitAnswer {
+            background: #10b981;
+        }
+
+        #submitAnswer:hover {
+            background: #059669;
+        }
+
+        #nextPuzzle {
+            background: #3b82f6;
+            display: none;
+        }
+
+        #nextPuzzle:hover {
+            background: #2563eb;
+        }
+
+        .feedback {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 15px;
+        }
+
+        .feedback.correct {
+            display: block;
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .feedback.incorrect {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #6b7280;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .modal-content ul {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .modal-content li {
+            color: #374151;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .start-button {
+            background: #10b981;
+            padding: 15px;
+            font-size: 18px;
+        }
+
+        .start-button:hover {
+            background: #059669;
+        }
+
+        .game-over-modal .modal-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            .statement {
+                padding: 12px;
+            }
+
+            .option {
+                padding: 12px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Player Info Modal -->
+    <div id="playerInfoModal" class="modal active">
+        <div class="modal-content">
+            <h2>🕵️ Welcome to Who's Lying?</h2>
+            <div class="form-group">
+                <label for="modalPlayerName">Name *</label>
+                <input type="text" id="modalPlayerName" required placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="modalPlayerDepartment">Team *</label>
+                <input type="text" id="modalPlayerDepartment" required placeholder="Enter your Team">
+            </div>
+            <button class="start-button" onclick="showInstructions()">NEXT</button>
+        </div>
+    </div>
+
+    <!-- Instruction Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <h2>🕵️ Who's Lying?</h2>
+            <p><strong>How to Play:</strong></p>
+            <ul>
+                <li>Read the statements from 3 people carefully</li>
+                <li>Use logic to determine who is telling the truth</li>
+                <li>Select the correct answer from multiple choices</li>
+                <li>Complete 10 puzzles within 60 seconds</li>
+            </ul>
+            <p><strong>Scoring System:</strong></p>
+            <ul>
+                <li>Time limit: 60 seconds</li>
+                <li>1 point per correct answer</li>
+                <li>Maximum score: 10 points</li>
+                <li>Answer quickly and accurately!</li>
+            </ul>
+            <p><strong>Tips:</strong></p>
+            <ul>
+                <li>Look for contradictions in the statements</li>
+                <li>Test each possibility logically</li>
+                <li>Follow the chain of logic from one proven fact</li>
+            </ul>
+            <button class="start-button" onclick="startGame()">START GAME</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal game-over-modal">
+        <div class="modal-content">
+            <div class="success-icon">🎉</div>
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <button class="start-button" onclick="submitScoreFromModal()">SEND SCORE</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🕵️ Who's Lying?</h1>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <div class="info-label">Timer</div>
+                <div class="info-value" id="timer">60</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Puzzle</div>
+                <div class="info-value" id="puzzleNum">1/10</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+        </div>
+
+        <div class="puzzle-container">
+            <div class="statements" id="statements"></div>
+            
+            <div class="question" id="question"></div>
+            
+            <div class="options" id="options"></div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <button id="submitAnswer" onclick="checkAnswer()">SUBMIT ANSWER</button>
+            <button id="nextPuzzle" onclick="nextPuzzle()">NEXT PUZZLE</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const TIME_LIMIT = 60;
+        const TOTAL_PUZZLES = 10;
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbziegVRvtwaZqFat2mxzQAtB1lMIgJm1W3osUJsuRkBpFPPc_UpWXLRt_8xDGR5J9oHaA/exec';
+
+        let playerName = '';
+        let playerDepartment = '';
+        let gameActive = false;
+        let timer = TIME_LIMIT;
+        let currentPuzzle = 0;
+        let score = 0;
+        let timerInterval;
+        let selectedAnswer = null;
+
+        // Puzzle database
+        const puzzles = [
+            {
+                statements: [
+                    { person: "Amy", text: "Brad is lying." },
+                    { person: "Brad", text: "Chris is lying." },
+                    { person: "Chris", text: "Both Amy and Brad are lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Amy is telling the truth",
+                    "Only Brad is telling the truth",
+                    "Only Chris is telling the truth",
+                    "Both Amy and Brad are telling the truth"
+                ],
+                correct: 1,
+                explanation: "If Chris were telling the truth (that both Amy and Brad are lying), Amy would be lying. But this would mean Brad is telling the truth, which contradicts Chris's statement. So Chris must be lying. If Chris is lying, Brad must be telling the truth. If Brad is telling the truth, Amy must be lying."
+            },
+            {
+                statements: [
+                    { person: "Dan", text: "Emma is lying." },
+                    { person: "Emma", text: "Frank is telling the truth." },
+                    { person: "Frank", text: "Dan is lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Dan is telling the truth",
+                    "Only Emma is telling the truth",
+                    "Only Frank is telling the truth",
+                    "Emma and Frank are telling the truth"
+                ],
+                correct: 3,
+                explanation: "If Dan is telling the truth, Emma is lying, which means Frank is lying. But Frank says Dan is lying, which would make Dan's statement false - contradiction. So Dan must be lying. If Dan is lying, Frank is telling the truth. If Frank is telling the truth, Emma is also telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Grace", text: "Henry is telling the truth." },
+                    { person: "Henry", text: "Iris is lying." },
+                    { person: "Iris", text: "Grace is lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Grace is telling the truth",
+                    "Only Henry is telling the truth",
+                    "Grace and Henry are telling the truth",
+                    "All three are lying"
+                ],
+                correct: 2,
+                explanation: "If Grace is telling the truth, Henry is telling the truth. If Henry is telling the truth, Iris is lying. If Iris is lying, then her statement that Grace is lying is false, meaning Grace is telling the truth. This is consistent! So Grace and Henry are telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Jack", text: "Kate is lying." },
+                    { person: "Kate", text: "Jack is lying." },
+                    { person: "Leo", text: "Both Jack and Kate are lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Jack is telling the truth",
+                    "Only Kate is telling the truth",
+                    "Only Leo is telling the truth",
+                    "No one is telling the truth"
+                ],
+                correct: 2,
+                explanation: "Jack and Kate contradict each other, so both cannot be telling the truth. If both are lying (as Leo says), then Jack's claim that Kate is lying is false (meaning Kate is truthful), which is a contradiction. Testing: if Leo is telling the truth, both Jack and Kate are lying. Jack says Kate is lying (false), so Kate is truthful - contradiction again. Actually, only Leo can be telling the truth if both Jack and Kate's statements are lies."
+            },
+            {
+                statements: [
+                    { person: "Mike", text: "Nina is telling the truth." },
+                    { person: "Nina", text: "Oscar is lying." },
+                    { person: "Oscar", text: "Mike is lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Mike is telling the truth",
+                    "Mike and Nina are telling the truth",
+                    "Only Oscar is telling the truth",
+                    "Nina and Oscar are telling the truth"
+                ],
+                correct: 1,
+                explanation: "If Mike is telling the truth, Nina is telling the truth. If Nina is telling the truth, Oscar is lying. If Oscar is lying, his statement that Mike is lying is false, meaning Mike is telling the truth. This is consistent! Mike and Nina are telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Paul", text: "Quinn and Rachel are both lying." },
+                    { person: "Quinn", text: "Paul is telling the truth." },
+                    { person: "Rachel", text: "Quinn is lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Paul is telling the truth",
+                    "Only Quinn is telling the truth",
+                    "Only Rachel is telling the truth",
+                    "Paul and Rachel are telling the truth"
+                ],
+                correct: 2,
+                explanation: "If Paul is telling the truth, both Quinn and Rachel are lying. But if Quinn is lying, her statement that Paul is telling the truth is false, meaning Paul is lying - contradiction. So Paul must be lying. If Paul is lying, at least one of Quinn or Rachel is telling the truth. If Rachel is telling the truth, Quinn is lying. This works! Rachel is telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Sam", text: "Tom is lying." },
+                    { person: "Tom", text: "Uma is telling the truth." },
+                    { person: "Uma", text: "Sam is lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Sam is telling the truth",
+                    "Only Tom is telling the truth",
+                    "Tom and Uma are telling the truth",
+                    "All three are lying"
+                ],
+                correct: 2,
+                explanation: "If Sam is telling the truth, Tom is lying. If Tom is lying, Uma is lying. If Uma is lying, Sam is telling the truth - consistent so far. But wait: If Tom is lying and says Uma is telling the truth, that means Uma is lying. But Uma says Sam is lying, which would be a lie, meaning Sam is truthful. Let's try: If Tom is telling the truth, Uma is telling the truth. If Uma is telling the truth, Sam is lying. If Sam is lying, Tom is telling the truth. Consistent! Tom and Uma are telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Vera", text: "Will is lying." },
+                    { person: "Will", text: "Xander is lying." },
+                    { person: "Xander", text: "Vera is telling the truth." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Vera is telling the truth",
+                    "Only Will is telling the truth",
+                    "Only Xander is telling the truth",
+                    "Vera and Xander are telling the truth"
+                ],
+                correct: 1,
+                explanation: "If Vera is telling the truth, Will is lying. If Will is lying, Xander is telling the truth. If Xander is telling the truth, Vera is telling the truth - consistent! But wait, this gives us Vera and Xander both truthful. Let's verify: If only Will is telling the truth, Xander is lying. If Xander is lying, Vera is lying. If Vera is lying, Will is telling the truth. Consistent! Only Will is telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Yara", text: "Zack is telling the truth." },
+                    { person: "Zack", text: "Alice is lying." },
+                    { person: "Alice", text: "Yara is lying." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Yara is telling the truth",
+                    "Yara and Zack are telling the truth",
+                    "Only Alice is telling the truth",
+                    "Zack and Alice are telling the truth"
+                ],
+                correct: 1,
+                explanation: "If Yara is telling the truth, Zack is telling the truth. If Zack is telling the truth, Alice is lying. If Alice is lying, her statement that Yara is lying is false, meaning Yara is telling the truth. Consistent! Yara and Zack are telling the truth."
+            },
+            {
+                statements: [
+                    { person: "Ben", text: "Cara is lying." },
+                    { person: "Cara", text: "Dave is lying." },
+                    { person: "Dave", text: "Ben is telling the truth." }
+                ],
+                question: "Who is telling the truth?",
+                options: [
+                    "Only Ben is telling the truth",
+                    "Only Cara is telling the truth",
+                    "Ben and Dave are telling the truth",
+                    "All three are lying"
+                ],
+                correct: 2,
+                explanation: "If Ben is telling the truth, Cara is lying. If Cara is lying, Dave is telling the truth. If Dave is telling the truth, Ben is telling the truth. Consistent! Ben and Dave are telling the truth, Cara is lying."
+            }
+        ];
+
+        function showInstructions() {
+            const name = document.getElementById('modalPlayerName').value.trim();
+            const team = document.getElementById('modalPlayerDepartment').value.trim();
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+
+            if (!team) {
+                alert('Please enter your team');
+                return;
+            }
+
+            playerName = name;
+            playerDepartment = team;
+
+            document.getElementById('playerInfoModal').classList.remove('active');
+            document.getElementById('instructionModal').classList.add('active');
+        }
+
+        function startGame() {
+            document.getElementById('instructionModal').classList.remove('active');
+            gameActive = true;
+            loadPuzzle();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                if (timer <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function loadPuzzle() {
+            if (currentPuzzle >= TOTAL_PUZZLES) {
+                endGame();
+                return;
+            }
+
+            const puzzle = puzzles[currentPuzzle];
+            
+            // Load statements
+            const statementsDiv = document.getElementById('statements');
+            statementsDiv.innerHTML = puzzle.statements.map(s => `
+                <div class="statement">
+                    <div class="statement-person">${s.person} says:</div>
+                    <div class="statement-text">"${s.text}"</div>
+                </div>
+            `).join('');
+
+            // Load question
+            document.getElementById('question').textContent = puzzle.question;
+
+            // Load options
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = puzzle.options.map((option, index) => `
+                <div class="option" onclick="selectOption(${index})">
+                    <input type="radio" name="answer" id="option${index}" value="${index}">
+                    <label for="option${index}">${option}</label>
+                </div>
+            `).join('');
+
+            // Reset UI
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('submitAnswer').style.display = 'block';
+            document.getElementById('submitAnswer').disabled = true;
+            document.getElementById('nextPuzzle').style.display = 'none';
+            selectedAnswer = null;
+
+            // Update puzzle number
+            document.getElementById('puzzleNum').textContent = `${currentPuzzle + 1}/${TOTAL_PUZZLES}`;
+        }
+
+        function selectOption(index) {
+            selectedAnswer = index;
+            
+            // Remove previous selection
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Mark current selection
+            document.querySelectorAll('.option')[index].classList.add('selected');
+            document.getElementById(`option${index}`).checked = true;
+            
+            // Enable submit button
+            document.getElementById('submitAnswer').disabled = false;
+        }
+
+        function checkAnswer() {
+            if (selectedAnswer === null) return;
+
+            const puzzle = puzzles[currentPuzzle];
+            const isCorrect = selectedAnswer === puzzle.correct;
+            const feedbackDiv = document.getElementById('feedback');
+            const options = document.querySelectorAll('.option');
+
+            // Disable all options
+            options.forEach((opt, index) => {
+                opt.style.pointerEvents = 'none';
+                if (index === puzzle.correct) {
+                    opt.classList.add('correct');
+                } else if (index === selectedAnswer && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            // Show feedback
+            if (isCorrect) {
+                score++;
+                document.getElementById('score').textContent = score;
+                feedbackDiv.className = 'feedback correct';
+                feedbackDiv.innerHTML = `
+                    <div><strong>✓ Correct!</strong></div>
+                    <div class="explanation">${puzzle.explanation}</div>
+                `;
+            } else {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackDiv.innerHTML = `
+                    <div><strong>✗ Incorrect!</strong></div>
+                    <div>The correct answer was: <strong>${puzzle.options[puzzle.correct]}</strong></div>
+                    <div class="explanation">${puzzle.explanation}</div>
+                `;
+            }
+
+            // Update UI
+            document.getElementById('submitAnswer').style.display = 'none';
+            document.getElementById('nextPuzzle').style.display = 'block';
+        }
+
+        function nextPuzzle() {
+            currentPuzzle++;
+            if (currentPuzzle >= TOTAL_PUZZLES) {
+                endGame();
+            } else {
+                loadPuzzle();
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const message = document.getElementById('gameOverMessage');
+
+            const percentage = ((score / TOTAL_PUZZLES) * 100).toFixed(0);
+
+            if (score === TOTAL_PUZZLES) {
+                title.textContent = '🎉 Perfect Detective!';
+                message.textContent = `Amazing! You solved all ${TOTAL_PUZZLES} puzzles correctly! Score: ${score}/${TOTAL_PUZZLES} (${percentage}%)`;
+            } else if (score >= 7) {
+                title.textContent = '🕵️ Great Work!';
+                message.textContent = `Excellent logical thinking! You solved ${score} out of ${TOTAL_PUZZLES} puzzles. Score: ${score}/${TOTAL_PUZZLES} (${percentage}%)`;
+            } else if (score >= 5) {
+                title.textContent = '👍 Good Try!';
+                message.textContent = `Not bad! You solved ${score} out of ${TOTAL_PUZZLES} puzzles. Score: ${score}/${TOTAL_PUZZLES} (${percentage}%)`;
+            } else {
+                title.textContent = '🤔 Keep Practicing!';
+                message.textContent = `You solved ${score} out of ${TOTAL_PUZZLES} puzzles. Score: ${score}/${TOTAL_PUZZLES} (${percentage}%)`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function submitScoreFromModal() {
+            const modal = document.getElementById('gameOverModal');
+            const button = modal.querySelector('button');
+            
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+                alert('⚠️ Apps Script URL not configured!\n\nPlease replace YOUR_APPS_SCRIPT_URL_HERE with your actual deployed Apps Script URL.');
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = '_blank';
+
+            const fields = {
+                name: playerName,
+                department: playerDepartment,
+                score: score.toString(),
+                totalPuzzles: TOTAL_PUZZLES.toString(),
+                timeRemaining: timer.toString(),
+                timestamp: new Date().toISOString()
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            button.textContent = 'Score Sent!';
+            setTimeout(() => {
+                modal.classList.remove('active');
+                location.reload();
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
