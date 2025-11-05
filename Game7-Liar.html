@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game 8 - Who's Lying?</title>
+    <title>Game 7 - Who's Lying?</title>
     <style>
         * {
             margin: 0;
@@ -448,6 +448,8 @@
         let timerInterval;
         let selectedAnswer = null;
 
+        loadSavedPlayerInfo();
+
         // Puzzle database
         const puzzles = [
             {
@@ -629,6 +631,10 @@
             playerName = name;
             playerDepartment = team;
 
+                        // Save to browser memory
+            localStorage.setItem('playerName', playerName);
+            localStorage.setItem('playerDepartment', playerDepartment);
+
             document.getElementById('playerInfoModal').classList.remove('active');
             document.getElementById('instructionModal').classList.add('active');
         }
@@ -638,6 +644,21 @@
             gameActive = true;
             loadPuzzle();
             startTimer();
+            loadSavedPlayerInfo();            
+        }
+
+                // Add this NEW function
+        function loadSavedPlayerInfo() {
+            const savedName = localStorage.getItem('playerName');
+            const savedDepartment = localStorage.getItem('playerDepartment');
+            
+            if (savedName) {
+                document.getElementById('modalPlayerName').value = savedName;
+            }
+            
+            if (savedDepartment) {
+                document.getElementById('modalPlayerDepartment').value = savedDepartment;
+            }
         }
 
         function startTimer() {
@@ -708,6 +729,8 @@
         }
 
         function checkAnswer() {
+            
+            loadSavedPlayerInfo();
             if (selectedAnswer === null) return;
 
             const puzzle = puzzles[currentPuzzle];

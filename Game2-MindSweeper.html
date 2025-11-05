@@ -449,9 +449,14 @@
             playerName = name;
             playerDepartment = document.getElementById('modalPlayerDepartment').value.trim();
 
+            localStorage.setItem('playerName', playerName);
+            localStorage.setItem('playerDepartment', playerDepartment);
+
             document.getElementById('playerInfoModal').classList.remove('active');
             document.getElementById('instructionModal').classList.add('active');
         }
+
+        
 
         function initBoard() {
             const boardElement = document.getElementById('minesweeperBoard');
@@ -683,6 +688,20 @@
 
         // Initialize
         initBoard();
+        loadSavedPlayerInfo();
+// Add this NEW function
+        function loadSavedPlayerInfo() {
+            const savedName = localStorage.getItem('playerName');
+            const savedDepartment = localStorage.getItem('playerDepartment');
+            
+            if (savedName) {
+                document.getElementById('modalPlayerName').value = savedName;
+            }
+            
+            if (savedDepartment) {
+                document.getElementById('modalPlayerDepartment').value = savedDepartment;
+            }
+        }
     </script>
 </body>
 </html>
