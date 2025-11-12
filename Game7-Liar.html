@@ -120,6 +120,16 @@
             gap: 12px;
         }
 
+         .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+
         .option:hover {
             border-color: #667eea;
             background: #f3f4f6;
@@ -347,8 +357,23 @@
     </style>
 </head>
 <body>
+
+    <!-- Quiz Modal (First Screen) -->
+    <div id="quizModal" class="modal active">
+        <div class="modal-content">
+            <h2>🔐 Access Quiz</h2>
+            <p>Answer the question below to proceed:</p>
+            <div class="form-group">
+                <label for="quizAnswer">What was the proposed floating amenity at Singapore River in 1982 by William Lim Associates (WLA)?</label>
+                <input type="text" id="quizAnswer" placeholder="Enter the keyword" autocomplete="off">
+                <div class="error-message" id="quizError">Incorrect answer. Please try again.</div>
+            </div>
+            <button onclick="checkQuizAnswer()">SUBMIT</button>
+        </div>
+    </div>
+
     <!-- Player Info Modal -->
-    <div id="playerInfoModal" class="modal active">
+    <div id="playerInfoModal" class="modal">
         <div class="modal-content">
             <h2>🕵️ Welcome to Who's Lying?</h2>
             <div class="form-group">
@@ -438,7 +463,9 @@
         const TIME_LIMIT = 60;
         const TOTAL_PUZZLES = 10;
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbziegVRvtwaZqFat2mxzQAtB1lMIgJm1W3osUJsuRkBpFPPc_UpWXLRt_8xDGR5J9oHaA/exec';
+        const QUIZ_ANSWER = "chinese floating restaurant"; // Case insensitive
 
+        
         let playerName = '';
         let playerDepartment = '';
         let gameActive = false;
@@ -638,6 +665,27 @@
             document.getElementById('playerInfoModal').classList.remove('active');
             document.getElementById('instructionModal').classList.add('active');
         }
+
+        function checkQuizAnswer() {
+            const answer = document.getElementById('quizAnswer').value.trim();
+            const errorMsg = document.getElementById('quizError');
+
+            loadSavedPlayerInfo();
+
+            if (answer.toLowerCase().includes(QUIZ_ANSWER.toLowerCase())) {
+                document.getElementById('quizModal').classList.remove('active');
+                document.getElementById('playerInfoModal').classList.add('active');
+                errorMsg.classList.remove('show');
+            } else {
+                errorMsg.classList.add('show');
+                document.getElementById('quizAnswer').value = '';
+                document.getElementById('quizAnswer').focus();
+            }
+        }
+
+        document.getElementById('quizAnswer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkQuizAnswer();
+        });
 
         function startGame() {
             document.getElementById('instructionModal').classList.remove('active');
