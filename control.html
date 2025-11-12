@@ -44,6 +44,12 @@
             //station8: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23fff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="16" fill="%23000"%3EStation 8%3C/text%3E%3C/svg%3E'
         };
 
+        const MAP_BACKGROUNDS = {
+            1: 'https://lexfoong91.github.io/PC4FamilyDay/Level1.png',
+            2: 'https://lexfoong91.github.io/PC4FamilyDay/Level2.png',
+            3: 'https://lexfoong91.github.io/PC4FamilyDay/Level3.png'
+        };
+
         // SAMPLE DATA - Used when Google Sheets is not configured
         const SAMPLE_TEAMS = [
             { name: 'Team A', members: [
@@ -67,14 +73,69 @@
         ];
 
         const STATION_CONFIG = [
-            { id: 'station1', name: 'Station 1', level: 1, x: '20%', y: '30%' },
-            { id: 'station2', name: 'Station 2', level: 1, x: '70%', y: '30%' },
-            { id: 'station3', name: 'Station 3', level: 2, x: '20%', y: '30%' },
-            { id: 'station4', name: 'Station 4', level: 2, x: '70%', y: '30%' },
-            { id: 'station5', name: 'Station 5', level: 2, x: '45%', y: '70%' },
-            { id: 'station6', name: 'Station 6', level: 3, x: '20%', y: '30%' },
-            { id: 'station7', name: 'Station 7', level: 3, x: '70%', y: '30%' },
-         //   { id: 'station8', name: 'Station 8', level: 3, x: '45%', y: '70%' }
+            { 
+                id: 'station1', 
+                name: 'Station 1', 
+                level: 1, 
+                x: '20%', 
+                y: '30%',
+                answerHint: 'Answer can be found at the information board near the entrance',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game1-KnightTour.html'
+            },
+            { 
+                id: 'station2', 
+                name: 'Station 2', 
+                level: 1, 
+                x: '70%', 
+                y: '30%',
+                answerHint: 'Answer can be found at the reception counter display',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game2-Minesweeper.html'
+            },
+            { 
+                id: 'station3', 
+                name: 'Station 3', 
+                level: 1, 
+                x: '45%', 
+                y: '70%',
+                answerHint: 'Answer can be found at the community notice board',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game3-CarEscape.html'
+            },
+            { 
+                id: 'station4', 
+                name: 'Station 4', 
+                level: 2, 
+                x: '70%', 
+                y: '30%',
+                answerHint: 'Answer can be found at the exhibition hall poster',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game4-Snake.html'
+            },
+            { 
+                id: 'station5', 
+                name: 'Station 5', 
+                level: 2, 
+                x: '45%', 
+                y: '70%',
+                answerHint: 'Answer can be found at the activity zone signage',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game5-Memory.html'
+            },
+            { 
+                id: 'station6', 
+                name: 'Station 6', 
+                level: 3, 
+                x: '20%', 
+                y: '30%',
+                answerHint: 'Answer can be found at the heritage corner display',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game6-FlappyBird.html'
+            },
+            { 
+                id: 'station7', 
+                name: 'Station 7', 
+                level: 3, 
+                x: '70%', 
+                y: '30%',
+                answerHint: 'Answer can be found at the main lobby information desk',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game7-Puzzle.html'
+            }
         ];
 
         // Icon Components
@@ -423,6 +484,8 @@
                 const currentStations = STATION_CONFIG.filter(s => s.level === currentLevel);
 
                 if (selectedStation) {
+                    const stationInfo = STATION_CONFIG.find(s => s.id === selectedStation);
+                    
                     return (
                         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-4">
                             <div className="max-w-md mx-auto">
@@ -432,11 +495,56 @@
                                             <ChevronLeft />
                                         </button>
                                         <h2 className="text-2xl font-bold text-gray-800">
-                                            {STATION_CONFIG.find(s => s.id === selectedStation)?.name}
+                                            {stationInfo?.name}
                                         </h2>
                                     </div>
-                                    <div className="bg-gray-100 rounded-xl p-4">
-                                        <img src={qrImages[selectedStation]} alt="QR Code" className="w-full max-w-xs mx-auto rounded-lg shadow-md" />
+                                    
+                                    {/* Answer Hint Section */}
+                                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-lg">
+                                        <div className="flex items-start">
+                                            <div className="flex-shrink-0">
+                                                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div className="ml-3">
+                                                <p className="text-sm font-semibold text-yellow-800 mb-1">📍 Answer Location</p>
+                                                <p className="text-sm text-yellow-700">
+                                                    {stationInfo?.answerHint || 'Answer can be found at the station'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Clickable QR Code */}
+                                    <div className="bg-gray-100 rounded-xl p-4 mb-4">
+                                        <a 
+                                            href={stationInfo?.gameUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="block hover:opacity-80 transition-opacity"
+                                        >
+                                            <img 
+                                                src={qrImages[selectedStation]} 
+                                                alt="QR Code" 
+                                                className="w-full max-w-xs mx-auto rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform" 
+                                            />
+                                        </a>
+                                    </div>
+                                    
+                                    {/* Instruction Text */}
+                                    <div className="text-center">
+                                        <p className="text-gray-600 text-sm mb-2">
+                                            👆 Tap QR code or scan to start the game
+                                        </p>
+                                        <a 
+                                            href={stationInfo?.gameUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                                        >
+                                            🎮 Open Game Directly
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -466,16 +574,37 @@
                                 </div>
                             </div>
                             <div className="bg-white rounded-2xl shadow-xl p-6">
-                                <div className="relative w-full h-96 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl">
-                                    {currentStations.map((station) => (
-                                        <button key={station.id} onClick={() => setSelectedStation(station.id)}
-                                            className="absolute w-16 h-16 bg-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition flex items-center justify-center font-bold"
-                                            style={{ left: station.x, top: station.y, transform: 'translate(-50%, -50%)' }}>
-                                            {station.name.split(' ')[1]}
-                                        </button>
-                                    ))}
+                                
+                                <div className="relative w-full rounded-xl overflow-hidden" style={{ paddingTop: '75%' }}>
+                                    {/* Background Map Image - Responsive */}
+                                    <img 
+                                        src={MAP_BACKGROUNDS[currentLevel]} 
+                                        alt={`Level ${currentLevel} Map`}
+                                        className="absolute inset-0 w-full h-full object-contain"
+                                    />
+                                    
+                                    {/* Station Buttons Overlaid on Map */}
+                                    <div className="absolute inset-0">
+                                        {currentStations.map((station) => (
+                                            <button 
+                                                key={station.id} 
+                                                onClick={() => setSelectedStation(station.id)}
+                                                className="absolute bg-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all flex items-center justify-center font-bold border-4 border-white"
+                                                style={{ 
+                                                    left: station.x, 
+                                                    top: station.y, 
+                                                    transform: 'translate(-50%, -50%)',
+                                                    zIndex: 10,
+                                                    width: 'clamp(48px, 10vw, 64px)',
+                                                    height: 'clamp(48px, 10vw, 64px)',
+                                                    fontSize: 'clamp(14px, 2.5vw, 18px)'
+                                                }}>
+                                                {station.name.split(' ')[1]}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                                <p className="text-center text-gray-600 mt-4">Tap any station to view QR code</p>
+                                <p className="text-center text-gray-600 mt-4 font-semibold">Tap any station to view QR code</p>
                             </div>
                         </div>
                     </div>
