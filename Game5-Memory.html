@@ -451,19 +451,19 @@
         <div class="modal-content">
             <h2>🧠 Quick Quiz</h2>
             <p style="font-size: 16px; font-weight: 600; color: #1f2937; margin: 20px 0;">
-                Under the historic east identity corridor, there will be a new public space within ____ South integrated development. (Fill in the blank)
+                Which of the following recommendation was not made by the United Nation teams for the Central area?
             </p>
             <div class="quiz-option" onclick="selectAnswer('A')">
-                <strong>(A)</strong> Katong
+                <strong>(A)</strong> Different policies of urban renewal should continue to be developed for different parts of the Central Area, from comprehensive redevelopment to refurbishing.
             </div>
             <div class="quiz-option" onclick="selectAnswer('B')">
-                <strong>(B)</strong> Siglap
+                <strong>(B)</strong> Public transport should be increasingly promoted in the Central Area beginning with the improvement of bus services where efforts had already begun.
             </div>
             <div class="quiz-option" onclick="selectAnswer('C')">
-                <strong>(C)</strong> Changi Road
+                <strong>(C)</strong> To preserve the character and scale of the townscape, areas of distinctive character should be designed as rehabilitation and conservation area.
             </div>
             <div class="quiz-option" onclick="selectAnswer('D')">
-                <strong>(D)</strong> Geylang
+                <strong>(D)</strong> None of the above.
             </div>
             <div id="quizError" class="error-message" style="display: none;"></div>
             <button class="start-button" onclick="submitQuiz()">SUBMIT ANSWER</button>
@@ -606,16 +606,16 @@
 
             const options = document.querySelectorAll('.quiz-option');
             
-            if (selectedQuizAnswer === 'B') {
+            if (selectedQuizAnswer === 'D') {
                 // Correct answer
-                options[1].classList.add('correct');
+                options[3].classList.add('correct');
                 setTimeout(() => {
                     document.getElementById('quizModal').classList.remove('active');
                     document.getElementById('playerInfoModal').classList.add('active');
                 }, 1000);
             } else {
                 // Incorrect answer - user must try again
-                const selectedIndex = selectedQuizAnswer === 'A' ? 0 : selectedQuizAnswer === 'C' ? 2 : 3;
+                const selectedIndex = selectedQuizAnswer === 'A' ? 0 : selectedQuizAnswer === 'C' ? 2 : 1;
                 options[selectedIndex].classList.add('incorrect');
                 
                 const errorDiv = document.getElementById('quizError');

@@ -64,6 +64,32 @@
             color: #1f2937;
         }
 
+        /* // !-- Quiz Submission --> */
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            transform-style: preserve-3d;
+            min-width: 0;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         #gameCanvas {
             width: 100%;
             max-width: 400px;
@@ -224,6 +250,44 @@
             margin-top: 10px;
             animation: pulse 2s infinite;
         }
+         /* // !-- Quiz Submission --> */
+        .quiz-option {
+            background: #f3f4f6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 15px;
+            touch-action: manipulation;
+        }
+/* // !-- Quiz Submission --> */
+        .quiz-option:active {
+            transform: scale(0.98);
+        }
+/* // !-- Quiz Submission --> */
+        .quiz-option.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+/* // !-- Quiz Submission --> */
+        .quiz-option.correct {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+/* // !-- Quiz Submission --> */
+        .quiz-option.incorrect {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+/* // !-- Quiz Submission --> */
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+        }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -265,17 +329,27 @@
     </style>
 </head>
 <body>
-    <!-- Quiz Modal -->
+  <!-- Quiz Modal --> 
     <div id="quizModal" class="modal active">
         <div class="modal-content">
-            <h2>🔐 Access Quiz</h2>
-            <p>Answer the question below to proceed:</p>
-            <div class="form-group">
-                <label for="quizAnswer">What is the keyword?</label>
-                <input type="text" id="quizAnswer" placeholder="Enter the keyword" autocomplete="off">
-                <div class="error-message" id="quizError">Incorrect answer. Please try again.</div>
+            <h2>🧠 Quick Quiz</h2>
+            <p style="font-size: 16px; font-weight: 600; color: #1f2937; margin: 20px 0;">
+                How much % of Singapore population owns a car?
+            </p>
+            <div class="quiz-option" onclick="selectAnswer('A')">
+                <strong>(A)</strong> 30%
             </div>
-            <button onclick="checkQuizAnswer()">SUBMIT</button>
+            <div class="quiz-option" onclick="selectAnswer('B')">
+                <strong>(B)</strong> 45%
+            </div>
+            <div class="quiz-option" onclick="selectAnswer('C')">
+                <strong>(C)</strong> 60%
+            </div>
+            <div class="quiz-option" onclick="selectAnswer('D')">
+                <strong>(D)</strong> 75%
+            </div>
+            <div id="quizError" class="error-message" style="display: none;"></div>
+            <button class="start-button" onclick="submitQuiz()">SUBMIT ANSWER</button>
         </div>
     </div>
 
@@ -353,7 +427,7 @@
     <script>
         // Configuration
         const TIME_LIMIT = 60;
-        const QUIZ_ANSWER = "keyword";
+        // const QUIZ_ANSWER = "keyword";
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynSFJLkUPv9Rzxr7Khsj6ABjiy4CwozIT_ge89ls-nGD1sQz1sUCe_jHIhfh_030Wd3g/exec';
 
         let playerName = '';
@@ -398,26 +472,54 @@
         let frameCount = 0;
 
         // Quiz functionality
-        function checkQuizAnswer() {
-            const answer = document.getElementById('quizAnswer').value.trim();
-            const errorMsg = document.getElementById('quizError');
+        // !-- Quiz Submission -->
+        function selectAnswer(answer) {
+            selectedQuizAnswer = answer;
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.closest('.quiz-option').classList.add('selected');
+            document.getElementById('quizError').style.display = 'none';
+        }
 
-            loadSavedPlayerInfo();
 
-            if (answer.toLowerCase().includes(QUIZ_ANSWER.toLowerCase())) {
-                document.getElementById('quizModal').classList.remove('active');
-                document.getElementById('playerInfoModal').classList.add('active');
-                errorMsg.classList.remove('show');
+        // !-- Quiz Submission -->
+        function submitQuiz() {
+            if (!selectedQuizAnswer) {
+                const errorDiv = document.getElementById('quizError');
+                errorDiv.textContent = 'Please select an answer';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const options = document.querySelectorAll('.quiz-option');
+            
+            if (selectedQuizAnswer === 'B') {
+                // Correct answer
+                options[1].classList.add('correct');
+                setTimeout(() => {
+                    document.getElementById('quizModal').classList.remove('active');
+                    document.getElementById('playerInfoModal').classList.add('active');
+                }, 1000);
             } else {
-                errorMsg.classList.add('show');
-                document.getElementById('quizAnswer').value = '';
-                document.getElementById('quizAnswer').focus();
+                // Incorrect answer - user must try again
+                const selectedIndex = selectedQuizAnswer === 'A' ? 0 : selectedQuizAnswer === 'C' ? 2 : 3;
+                options[selectedIndex].classList.add('incorrect');
+                
+                const errorDiv = document.getElementById('quizError');
+                errorDiv.textContent = 'Incorrect! Please try again.';
+                errorDiv.style.display = 'block';
+                
+                // Reset selection after 1.5 seconds but keep them on quiz page
+                setTimeout(() => {
+                    options.forEach(opt => {
+                        opt.classList.remove('incorrect', 'selected');
+                    });
+                    selectedQuizAnswer = null;
+                }, 1500);
             }
         }
 
-        document.getElementById('quizAnswer').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') checkQuizAnswer();
-        });
 
         function showInstructions() {
             const name = document.getElementById('modalPlayerName').value.trim();

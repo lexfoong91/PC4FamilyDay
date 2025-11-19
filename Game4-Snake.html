@@ -187,6 +187,23 @@
             text-align: center;
         }
 
+            .success-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+
         @media (min-width: 768px) {
             .modal-content {
                 max-width: 500px;
@@ -319,27 +336,17 @@
 </head>
 <body>
  <!-- // !-- Quiz Submission -->
-    <!-- Quiz Modal --> 
+    <!-- Quiz Modal (First Screen) -->
     <div id="quizModal" class="modal active">
         <div class="modal-content">
-            <h2>🧠 Quick Quiz</h2>
-            <p style="font-size: 16px; font-weight: 600; color: #1f2937; margin: 20px 0;">
-                Under the historic east identity corridor, there will be a new public space within ____ South integrated development. (Fill in the blank)
-            </p>
-            <div class="quiz-option" onclick="selectAnswer('A')">
-                <strong>(A)</strong> Katong
+            <h2>🔐 Access Quiz</h2>
+            <p>Answer the question below to proceed:</p>
+            <div class="form-group">
+                <label for="quizAnswer">There are 4 areas identified for economic growth in Singapore. What is identified for Tuas?</label>
+                <input type="text" id="quizAnswer" placeholder="Enter the keyword" autocomplete="off">
+                <div class="error-message" id="quizError">Incorrect answer. Please try again.</div>
             </div>
-            <div class="quiz-option" onclick="selectAnswer('B')">
-                <strong>(B)</strong> Siglap
-            </div>
-            <div class="quiz-option" onclick="selectAnswer('C')">
-                <strong>(C)</strong> Changi Road
-            </div>
-            <div class="quiz-option" onclick="selectAnswer('D')">
-                <strong>(D)</strong> Geylang
-            </div>
-            <div id="quizError" class="error-message" style="display: none;"></div>
-            <button class="start-button" onclick="submitQuiz()">SUBMIT ANSWER</button>
+            <button onclick="checkQuizAnswer()">SUBMIT</button>
         </div>
     </div>
 
@@ -435,6 +442,8 @@
         const GRID_SIZE = 20;
         const INITIAL_SPEED = 150; // ms per move
         const TIME_LIMIT = 60;
+        const QUIZ_ANSWER = "biomedical"; // Case insensitive
+
         
         // ⚠️ IMPORTANT: Replace this with your actual Apps Script URL
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_gLOdoYJRAejwd_Hj0-8Wb_izWdnxK3iBlimqdSW4C5donYAsznQFs4gkCTTdxI8aPA/exec';
@@ -462,52 +471,29 @@
         let touchEndY = 0;
 
 // !-- Quiz Submission -->
-        function selectAnswer(answer) {
-            selectedQuizAnswer = answer;
-            document.querySelectorAll('.quiz-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            event.target.closest('.quiz-option').classList.add('selected');
-            document.getElementById('quizError').style.display = 'none';
-        }
+            // Quiz functionality
+        function checkQuizAnswer() {
+            const answer = document.getElementById('quizAnswer').value.trim();
+            const errorMsg = document.getElementById('quizError');
 
-
-        // !-- Quiz Submission -->
-        function submitQuiz() {
-            if (!selectedQuizAnswer) {
-                const errorDiv = document.getElementById('quizError');
-                errorDiv.textContent = 'Please select an answer';
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            const options = document.querySelectorAll('.quiz-option');
-            
-            if (selectedQuizAnswer === 'B') {
-                // Correct answer
-                options[1].classList.add('correct');
-                setTimeout(() => {
-                    document.getElementById('quizModal').classList.remove('active');
-                    document.getElementById('playerInfoModal').classList.add('active');
-                }, 1000);
+            // Case insensitive check - if answer contains the keyword
+            if (answer.toLowerCase().includes(QUIZ_ANSWER.toLowerCase())) {
+                document.getElementById('quizModal').classList.remove('active');
+                document.getElementById('playerInfoModal').classList.add('active');
+                errorMsg.classList.remove('show');
             } else {
-                // Incorrect answer - user must try again
-                const selectedIndex = selectedQuizAnswer === 'A' ? 0 : selectedQuizAnswer === 'C' ? 2 : 3;
-                options[selectedIndex].classList.add('incorrect');
-                
-                const errorDiv = document.getElementById('quizError');
-                errorDiv.textContent = 'Incorrect! Please try again.';
-                errorDiv.style.display = 'block';
-                
-                // Reset selection after 1.5 seconds but keep them on quiz page
-                setTimeout(() => {
-                    options.forEach(opt => {
-                        opt.classList.remove('incorrect', 'selected');
-                    });
-                    selectedQuizAnswer = null;
-                }, 1500);
+                errorMsg.classList.add('show');
+                document.getElementById('quizAnswer').value = '';
+                document.getElementById('quizAnswer').focus();
             }
         }
+
+        // Allow Enter key to submit quiz
+        document.getElementById('quizAnswer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkQuizAnswer();
+            }
+        });
 
         function showInstructions() {
             const name = document.getElementById('modalPlayerName').value.trim();
