@@ -30,7 +30,7 @@
         // CONFIGURATION - CUSTOMIZE HERE
         // ====================================================================
         
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1uKSIykaTSFb21OPY_ZEipy_pUzjXOc8dl0bk9IqWhUx3IwznlBXJiHBQ7u0ThVaawQ/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcwtMGvZq8vHoRb8R221zoJ8WR7pIWMTWpFzdui0qrkia4vtpapS7-3_LP9Zjsh4E5QQ/exec';
         const REFRESH_INTERVAL = 30000; // Refresh teams every 30 seconds
 
         const SAMPLE_QR_CODES = {
@@ -77,36 +77,36 @@
                 id: 'station1', 
                 name: 'Station 1', 
                 level: 1, 
-                x: '20%', 
-                y: '30%',
-                answerHint: 'Answer can be found at the information board near the entrance',
+                x: '30%', 
+                y: '10%',
+                answerHint: 'Answer can be found at Level 1 - West Region',
                 gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game1-KnightTour.html'
             },
             { 
                 id: 'station2', 
                 name: 'Station 2', 
                 level: 1, 
-                x: '70%', 
-                y: '30%',
-                answerHint: 'Answer can be found at the reception counter display',
-                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game2-Minesweeper.html'
+                x: '60%', 
+                y: '40%',
+                answerHint: 'Answer can be found at Level 1 - Stewarding Nature and Heritage Region',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game2-MineSweeper.html'
             },
             { 
                 id: 'station3', 
                 name: 'Station 3', 
                 level: 1, 
-                x: '45%', 
-                y: '70%',
-                answerHint: 'Answer can be found at the community notice board',
-                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game3-CarEscape.html'
+                x: '50%', 
+                y: '65%',
+                answerHint: 'Answer can be found at Level 1 - Historic East Region',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game3-RushHour.html'
             },
             { 
                 id: 'station4', 
                 name: 'Station 4', 
                 level: 2, 
-                x: '70%', 
-                y: '30%',
-                answerHint: 'Answer can be found at the exhibition hall poster',
+                x: '80%', 
+                y: '20%',
+                answerHint: 'Answer can be found at Level 2 - "Day in Singapore (Interactive Screen)"',
                 gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game4-Snake.html'
             },
             { 
@@ -114,27 +114,27 @@
                 name: 'Station 5', 
                 level: 2, 
                 x: '45%', 
-                y: '70%',
-                answerHint: 'Answer can be found at the activity zone signage',
+                y: '60%',
+                answerHint: 'Answer can be found at Level 2 - "Mapping Singapore (1966-1985 Transformation)"',
                 gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game5-Memory.html'
             },
             { 
                 id: 'station6', 
                 name: 'Station 6', 
                 level: 3, 
-                x: '20%', 
-                y: '30%',
-                answerHint: 'Answer can be found at the heritage corner display',
+                x: '75%', 
+                y: '70%',
+                answerHint: 'Answer can be found at Level 3 - Big Plans, "Lets go car-lite interactive screen"',  
                 gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game6-FlappyBird.html'
             },
             { 
                 id: 'station7', 
                 name: 'Station 7', 
                 level: 3, 
-                x: '70%', 
-                y: '30%',
-                answerHint: 'Answer can be found at the main lobby information desk',
-                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game7-Puzzle.html'
+                x: '58%', 
+                y: '60%',
+                answerHint: 'Answer can be found at Level 3 - Planning Area',
+                gameUrl: 'https://lexfoong91.github.io/PC4FamilyDay/Game7-Liar.html'
             }
         ];
 
@@ -272,27 +272,47 @@
                         setSendStatus('');
                         return;
                     }
+                // Use fetch instead of form submission
+                try {
+                    const formData = new FormData();
+                    formData.append('action', 'saveAttendance');
+                    formData.append('data', JSON.stringify(attendanceData));
 
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = APPS_SCRIPT_URL;
-                    form.target = '_blank';
+                    fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors'  // Important for Apps Script
+                    });
 
-                    const actionInput = document.createElement('input');
-                    actionInput.type = 'hidden';
-                    actionInput.name = 'action';
-                    actionInput.value = 'saveAttendance';
-                    form.appendChild(actionInput);
+                    // Show success message without opening new page
+                    setSendStatus('success');
+                    setTimeout(() => setSendStatus(''), 3000);
+                    
+                } catch (error) {
+                    console.error('Error sending to Google Sheets:', error);
+                    setSendStatus('error');
+                    setTimeout(() => setSendStatus(''), 3000);
+                }
+                    // const form = document.createElement('form');
+                    // form.method = 'POST';
+                    // form.action = APPS_SCRIPT_URL;
+                    // form.target = '_blank';
 
-                    const dataInput = document.createElement('input');
-                    dataInput.type = 'hidden';
-                    dataInput.name = 'data';
-                    dataInput.value = JSON.stringify(attendanceData);
-                    form.appendChild(dataInput);
+                    // const actionInput = document.createElement('input');
+                    // actionInput.type = 'hidden';
+                    // actionInput.name = 'action';
+                    // actionInput.value = 'saveAttendance';
+                    // form.appendChild(actionInput);
 
-                    document.body.appendChild(form);
-                    form.submit();
-                    document.body.removeChild(form);
+                    // const dataInput = document.createElement('input');
+                    // dataInput.type = 'hidden';
+                    // dataInput.name = 'data';
+                    // dataInput.value = JSON.stringify(attendanceData);
+                    // form.appendChild(dataInput);
+
+                    // document.body.appendChild(form);
+                    // form.submit();
+                    // document.body.removeChild(form);
 
                     setSendStatus('success');
                     setTimeout(() => setSendStatus(''), 3000);
