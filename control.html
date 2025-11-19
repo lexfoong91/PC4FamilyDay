@@ -30,8 +30,8 @@
         // CONFIGURATION - CUSTOMIZE HERE
         // ====================================================================
         
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcwtMGvZq8vHoRb8R221zoJ8WR7pIWMTWpFzdui0qrkia4vtpapS7-3_LP9Zjsh4E5QQ/exec';
-        const REFRESH_INTERVAL = 30000; // Refresh teams every 30 seconds
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXMhp_rwNgj0XLvayQW4Ba7TN2JjCBSq4sy6olVew-hMOMTXXjGdvBQHg8oLpU6W2Pqg/exec';
+        const REFRESH_INTERVAL = 30000000; // Refresh teams every 30 seconds
 
         const SAMPLE_QR_CODES = {
             station1: 'https://lexfoong91.github.io/PC4FamilyDay/Game1.jpg',
@@ -50,27 +50,27 @@
             3: 'https://lexfoong91.github.io/PC4FamilyDay/Level3.png'
         };
 
-        // SAMPLE DATA - Used when Google Sheets is not configured
-        const SAMPLE_TEAMS = [
-            { name: 'Team A', members: [
-                { id: 1, name: 'Member A1', present: false },
-                { id: 2, name: 'Member A2', present: false },
-                { id: 3, name: 'Member A3', present: false },
-                { id: 4, name: 'Member A4', present: false }
-            ]},
-            { name: 'Team B', members: [
-                { id: 5, name: 'Member B1', present: false },
-                { id: 6, name: 'Member B2', present: false },
-                { id: 7, name: 'Member B3', present: false },
-                { id: 8, name: 'Member B4', present: false }
-            ]},
-            { name: 'Team C', members: [
-                { id: 9, name: 'Member C1', present: false },
-                { id: 10, name: 'Member C2', present: false },
-                { id: 11, name: 'Member C3', present: false },
-                { id: 12, name: 'Member C4', present: false }
-            ]}
-        ];
+        // // SAMPLE DATA - Used when Google Sheets is not configured
+        // const SAMPLE_TEAMS = [
+        //     { name: 'Team A', members: [
+        //         { id: 1, name: 'Member A1', present: false },
+        //         { id: 2, name: 'Member A2', present: false },
+        //         { id: 3, name: 'Member A3', present: false },
+        //         { id: 4, name: 'Member A4', present: false }
+        //     ]},
+        //     { name: 'Team B', members: [
+        //         { id: 5, name: 'Member B1', present: false },
+        //         { id: 6, name: 'Member B2', present: false },
+        //         { id: 7, name: 'Member B3', present: false },
+        //         { id: 8, name: 'Member B4', present: false }
+        //     ]},
+        //     { name: 'Team C', members: [
+        //         { id: 9, name: 'Member C1', present: false },
+        //         { id: 10, name: 'Member C2', present: false },
+        //         { id: 11, name: 'Member C3', present: false },
+        //         { id: 12, name: 'Member C4', present: false }
+        //     ]}
+        // ];
 
         const STATION_CONFIG = [
             { 
@@ -197,34 +197,111 @@
 
             // Fetch teams from Google Sheets
             const fetchTeams = async () => {
-                try {
-                    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
-                        console.log('Demo mode - Using sample data');
-                        const teamsWithMembers = SAMPLE_TEAMS.filter(team => team.members && team.members.length > 0);
-                        setTeams(teamsWithMembers);
-                        setLoading(false);
-                        return;
-                    }
+    try {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL') {
+            console.log('Demo mode - Using sample data');
+            const teamsWithMembers = SAMPLE_TEAMS.filter(team => team.members && team.members.length > 0);
+            setTeams(teamsWithMembers);
+            setLoading(false);
+            return;
+        }
 
-                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getTeams&timestamp=${Date.now()}`);
-                    const data = await response.json();
-                    
-                    if (data.success && data.teams) {
-                        const teamsWithMembers = data.teams.filter(team => team.members && team.members.length > 0);
-                        setTeams(teamsWithMembers);
-                        setError(null);
-                    } else {
-                        throw new Error('Failed to fetch teams');
-                    }
-                } catch (err) {
-                    console.error('Error fetching teams:', err);
-                    setError('Failed to load teams. Using sample data.');
-                    const teamsWithMembers = SAMPLE_TEAMS.filter(team => team.members && team.members.length > 0);
-                    setTeams(teamsWithMembers);
-                } finally {
-                    setLoading(false);
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getTeams&timestamp=${Date.now()}`);
+        const data = await response.json();
+        
+        if (data.success && data.teams) {
+            // ✅ Filter out invalid teams (where name contains only a person's name)
+            const validTeams = data.teams.filter(team => {
+                const teamNameLower = team.name.toLowerCase();
+                return teamNameLower.startsWith('team') && team.members && team.members.length > 0;
+            });
+            
+            // ✅ Preserve local attendance state during refresh
+            setTeams(prevTeams => {
+                // If no previous teams (first load), use fresh data with all present=false
+                if (prevTeams.length === 0) {
+                    return validTeams.map(team => ({
+                        ...team,
+                        members: team.members.map(member => ({
+                            ...member,
+                            present: false
+                        }))
+                    }));
                 }
-            };
+                
+                // Merge: keep existing attendance status for matching members
+                return validTeams.map(newTeam => {
+                    const existingTeam = prevTeams.find(t => t.name === newTeam.name);
+                    
+                    if (existingTeam) {
+                        return {
+                            ...newTeam,
+                            members: newTeam.members.map(newMember => {
+                                const existingMember = existingTeam.members.find(
+                                    m => (m.id === newMember.id) || (m.name === newMember.name)
+                                );
+                                
+                                return existingMember 
+                                    ? { ...newMember, present: existingMember.present }
+                                    : { ...newMember, present: false };
+                            })
+                        };
+                    }
+                    
+                    return {
+                        ...newTeam,
+                        members: newTeam.members.map(member => ({
+                            ...member,
+                            present: false
+                        }))
+                    };
+                });
+            });
+            
+            setError(null);
+        } else {
+            throw new Error('Failed to fetch teams');
+        }
+    } catch (err) {
+        console.error('Error fetching teams:', err);
+        setError('Failed to load teams.');
+    } finally {
+        setLoading(false);
+    }
+};
+// ```
+
+// ---
+
+// ## **MOST IMPORTANT: Fix Your Google Sheets Data**
+
+// Your Google Sheets "Team" tab currently has **corrupt data**. Here's what you need to do:
+
+// ### Step 1: Open your Google Sheet
+// ### Step 2: Check the "Team" sheet and look for rows like:
+// ```
+// | Danielle Tay | Danielle Tay | 1 |
+// ```
+
+// ### Step 3: Fix these rows to:
+// ```
+// | Team A | Danielle Tay | 1 |
+// | Team C | Kwek Wen Rui | 2 |
+// | Team C | Owyong Heng | 3 |
+// | Team C | Lai Kok Siong | 4 |
+// | Team C | Samuel Low | 5 |
+// | Team J | Thilaga | 10 |
+// | Team J | Koh Cheow See | 11 |
+// | Team J | Lily | 12 |
+// | Team J | Pang Xue Wen | 13 |
+// | Team J | Chen Xiufang | 14 |
+// ```
+
+// ### Correct Format:
+// ```
+// Column A: Team Name (e.g., "Team A", "Team B", "Team C")
+// Column B: Member Name (e.g., "Danielle Tay", "Samuel Low")
+// Column C: Member ID (e.g., 1, 2, 3)
 
             useEffect(() => {
                 fetchTeams();
@@ -343,7 +420,7 @@
                                         <h3 className="text-lg font-bold text-gray-800">Record Attendance</h3>
                                     </div>
                                     <div className="text-gray-700 pl-10 space-y-2">
-                                        <p><b>Step 1:</b> Tap your team (A-J)</p>
+                                        <p><b>Step 1:</b> Tap your team (A-L)</p>
                                         <p><b>Step 2:</b> Tap names to mark present</p>
                                         <p><b>Step 3:</b> Tap Send to Sheets</p>
                                     </div>
