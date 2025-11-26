@@ -270,7 +270,6 @@
             margin-bottom: 15px;
         }
 
-        /* // !-- Quiz Submission --> */
         .quiz-option {
             background: #f3f4f6;
             padding: 15px;
@@ -283,26 +282,21 @@
             font-size: 15px;
             touch-action: manipulation;
         }
-/* // !-- Quiz Submission --> */
         .quiz-option:active {
             transform: scale(0.98);
         }
-/* // !-- Quiz Submission --> */
         .quiz-option.selected {
             background: #dbeafe;
             border-color: #3b82f6;
         }
-/* // !-- Quiz Submission --> */
         .quiz-option.correct {
             background: #d1fae5;
             border-color: #10b981;
         }
-/* // !-- Quiz Submission --> */
         .quiz-option.incorrect {
             background: #fee2e2;
             border-color: #ef4444;
         }
-/* // !-- Quiz Submission --> */
         .error-message {
             color: #ef4444;
             font-size: 14px;
@@ -324,7 +318,6 @@
     </style>
 </head>
 <body>
-    <!-- // !-- Quiz Submission -->
     <!-- Quiz Modal --> 
     <div id="quizModal" class="modal active">
         <div class="modal-content">
@@ -424,10 +417,9 @@
     </div>
 
     <script>
-        // Configuration
         const BOARD_SIZE = 8;
         const TIME_LIMIT = 60;
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXDbq_6_NVmayFQluR6JVjrknILzvJCt8zBcnIY_gnna800o-6Rwb9lrxwwcR-ckZJ_g/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvT-LAqA21g79oZBdJKLfHRXdpPL-ztMwaj1ULjdzBTjvPwWPzaXi4WYd81pBVvh5Zfw/exec';
 
         let squareSize = 45;
         let knightPos = { row: 0, col: 0 };
@@ -449,7 +441,6 @@
         }
 
 
-        // !-- Quiz Submission -->
         function selectAnswer(answer) {
             selectedQuizAnswer = answer;
             document.querySelectorAll('.quiz-option').forEach(opt => {
@@ -459,8 +450,6 @@
             document.getElementById('quizError').style.display = 'none';
         }
 
-
-        // !-- Quiz Submission -->
         function submitQuiz() {
             if (!selectedQuizAnswer) {
                 const errorDiv = document.getElementById('quizError');
@@ -497,21 +486,6 @@
                 }, 3000);
             }
         }
-
-        // function showInstructions() {
-        //     const name = document.getElementById('modalPlayerName').value.trim();
-            
-        //     if (!name) {
-        //         alert('Please enter your name');
-        //         return;
-        //     }
-
-        //     playerName = name;
-        //     playerDepartment = document.getElementById('modalPlayerDepartment').value.trim();
-
-        //     document.getElementById('playerInfoModal').classList.remove('active');
-        //     document.getElementById('instructionModal').classList.add('active');
-        // }
 
         function showInstructions() {
             const name = document.getElementById('modalPlayerName').value.trim();
@@ -731,10 +705,9 @@
 
         window.addEventListener('load', () => {
             initBoard();
-            loadSavedPlayerInfo(); // Add this line
+            loadSavedPlayerInfo(); 
         });
 
-// Add this NEW function
     function loadSavedPlayerInfo() {
         const savedName = localStorage.getItem('playerName');
         const savedDepartment = localStorage.getItem('playerDepartment');
